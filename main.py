@@ -1,8 +1,8 @@
 import os
 import random
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from questions_data import QUESTIONS
 
@@ -10,14 +10,7 @@ app = FastAPI()
 
 class AIRequest(BaseModel):
     question: str
-    options: list
-    correct_answer: str
-    subject: str
-    mode: str
-    explanation: str
-
-class AIKeyRequest(BaseModel):
-    key: str
+    answer: str
 
 @app.get("/api/questions")
 def get_questions(subject: str = None, year: str = None, count: int = 25):
@@ -54,32 +47,18 @@ async def ai_explain(req: AIRequest):
             import google.generativeai as genai
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel("gemini-1.5-flash")
-            if req.mode == "hint":
-                prompt = f"""You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).
-                
-Question: {req.question}
-Options: {', '.join([f'{chr(65+i)}. {opt}' for i, opt in enumerate(req.options)])}
-Subject: {req.subject}
+            prompt = f"""You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).
 
-Give a helpful HINT that guides the student toward the answer WITHOUT revealing which option is correct.
-Keep it brief (2-3 sentences), educational, and encouraging. Focus on the key concept being tested."""
-            else:
-                prompt = f"""You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).
-                
 Question: {req.question}
-Options: {', '.join([f'{chr(65+i)}. {opt}' for i, opt in enumerate(req.options)])}
-Correct Answer: {req.correct_answer}
-Subject: {req.subject}
+Correct Answer: {req.answer}
 
-Provide a clear, concise explanation (3-4 sentences) of why the correct answer is right.
-Include the key biological/chemical/physical/grammatical concept being tested.
-Make it easy to remember for exam purposes."""
+Provide a clear, concise explanation (3-4 sentences) of why this is the correct answer.
+Include the key concept being tested. Make it easy to remember for exam purposes."""
             response = model.generate_content(prompt)
-            return JSONResponse(content={"success": True, "response": response.text, "source": "gemini"})
-        except Exception as e:
+            return JSONResponse(content={"explanation": response.text, "source": "gemini"})
+        except Exception:
             pass
-    fallback = req.explanation if req.mode != "hint" else f"Think about the core concept: {req.subject} principles related to this topic. Review your notes on this area before choosing your answer."
-    return JSONResponse(content={"success": True, "response": fallback, "source": "fallback"})
+    return JSONResponse(content={"explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.", "source": "fallback"})
 
 @app.get("/api/ai/status")
 def ai_status():
