@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UIPrep — UI Post UTME CBT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="screen-home" class="screen active">
+  <div class="home-nav">
+    <div class="logo">UI<span>Prep</span></div>
+    <div class="home-nav-right">
+      <button class="btn-ghost" onclick="showAISetup()">🔑 AI Setup</button>
+    </div>
+  </div>
+  <div class="home-hero">
+    <div class="hero-badge">🎓 University of Ibadan · Post UTME</div>
+    <h1>Ace Your UI<br><span class="hero-highlight">Post UTME</span></h1>
+    <p class="hero-sub">Practice with 400+ real past questions from 2019–2025 across Biology, Chemistry, Physics and English.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">400+</span><span class="stat-label">Questions</span></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Subjects</span></div>
+      <div class="stat"><span class="stat-num">7</span><span class="stat-label">Years</span></div>
+      <div class="stat"><span class="stat-num">AI</span><span class="stat-label">Powered</span></div>
+    </div>
+  </div>
+  <div class="home-modes">
+    <div class="mode-card exam-card" onclick="openSetup('exam')">
+      <div class="mode-icon">🎯</div>
+      <div class="mode-info">
+        <h2>Exam Mode</h2>
+        <p>Simulate the real UI Post UTME exam. 90 minutes, 25 questions per subject, timed and scored.</p>
+        <div class="mode-tags">
+          <span class="tag tag-red">⏱ 90 Minutes</span>
+          <span class="tag tag-blue">25 per Subject</span>
+          <span class="tag tag-purple">Full Scoring</span>
+        </div>
+      </div>
+      <div class="mode-arrow">→</div>
+    </div>
+    <div class="mode-card practice-card" onclick="openSetup('practice')">
+      <div class="mode-icon">📚</div>
+      <div class="mode-info">
+        <h2>Practice Mode</h2>
+        <p>Learn at your own pace with instant feedback, detailed explanations and AI tutor on every question.</p>
+        <div class="mode-tags">
+          <span class="tag tag-green">✓ Instant Feedback</span>
+          <span class="tag tag-blue">AI Explanations</span>
+          <span class="tag tag-purple">No Time Limit</span>
+        </div>
+      </div>
+      <div class="mode-arrow">→</div>
+    </div>
+  </div>
+  <div class="home-footer">
+    Questions sourced from Demola's original UI Post UTME Past Question pack · 2019–2025
+  </div>
+</div>
+
+<div id="screen-setup" class="screen">
+  <div class="setup-container">
+    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    <div class="setup-header">
+      <h2 id="setup-title">Exam Setup</h2>
+      <p id="setup-sub">Configure your session</p>
+    </div>
+    <div class="setup-body">
+      <div class="setup-field">
+        <label>Select Subjects</label>
+        <div class="subject-grid" id="subject-grid">
+          <div class="subj-chip selected" data-subject="Biology" onclick="toggleSubject(this)">🧬 Biology</div>
+          <div class="subj-chip selected" data-subject="Chemistry" onclick="toggleSubject(this)">⚗️ Chemistry</div>
+          <div class="subj-chip selected" data-subject="Physics" onclick="toggleSubject(this)">⚡ Physics</div>
+          <div class="subj-chip selected" data-subject="English" onclick="toggleSubject(this)">📖 English</div>
+        </div>
+      </div>
+      <div class="setup-field">
+        <label>Year</label>
+        <div class="select-wrap">
+          <select id="year-select">
+            <option value="random">🎲 Random (Mix All Years)</option>
+            <option value="2019">2019</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+          </select>
+        </div>
+      </div>
+      <div class="setup-field" id="count-field">
+        <label>Questions per Subject</label>
+        <div class="select-wrap">
+          <select id="count-select">
+            <option value="10">10 Questions</option>
+            <option value="20">20 Questions</option>
+            <option value="25" selected>25 Questions</option>
+            <option value="all">All Available</option>
+          </select>
+        </div>
+      </div>
+      <div class="setup-info" id="exam-info">
+        <div class="info-row">⏱ Total time: <strong>90 minutes</strong></div>
+        <div class="info-row">📝 Questions: <strong>25 per subject</strong></div>
+        <div class="info-row">🎯 Format: <strong>Subject-by-subject navigation</strong></div>
+      </div>
+    </div>
+    <button class="btn-primary full-width" onclick="startSession()" id="start-btn">Start Session →</button>
+  </div>
+</div>
+
+<div id="screen-quiz" class="screen">
+  <div class="quiz-layout">
+    <div class="quiz-topbar">
+      <div class="quiz-logo">UI<span>Prep</span></div>
+      <div class="subject-tabs" id="subject-tabs"></div>
+      <div class="quiz-topbar-right">
+        <div class="timer-wrap" id="timer-wrap">
+          <div class="timer-icon">⏱</div>
+          <div class="timer-display" id="timer-display">90:00</div>
+        </div>
+        <button class="btn-submit" onclick="showSubmitConfirm()">Submit</button>
+      </div>
+    </div>
+    <div class="quiz-main">
+      <div class="quiz-sidebar">
+        <div class="sidebar-header" id="sidebar-header">Biology · 25 Questions</div>
+        <div class="q-grid" id="q-grid"></div>
+        <div class="sidebar-legend">
+          <div class="legend-item"><div class="legend-dot answered"></div> Answered</div>
+          <div class="legend-item"><div class="legend-dot flagged"></div> Flagged</div>
+          <div class="legend-item"><div class="legend-dot current"></div> Current</div>
+          <div class="legend-item"><div class="legend-dot unanswered"></div> Unanswered</div>
+        </div>
+        <div class="sidebar-progress" id="sidebar-progress"></div>
+      </div>
+      <div class="quiz-content">
+        <div class="q-header">
+          <div class="q-meta">
+            <span class="q-subject-tag" id="q-subject-tag">Biology</span>
+            <span class="q-number">Question <span id="q-num">1</span> of <span id="q-total">25</span></span>
+          </div>
+          <div class="q-actions">
+            <button class="btn-flag" id="flag-btn" onclick="toggleFlag()">⚑ Flag</button>
+            <button class="btn-ai" id="ai-hint-btn" onclick="askAI('hint')">🤖 Hint</button>
+          </div>
+        </div>
+        <div class="question-card">
+          <div class="q-text" id="q-text">Loading question...</div>
+          <div class="options-list" id="options-list"></div>
+          <div class="explanation-panel" id="explanation-panel" style="display:none"></div>
+          <div class="ai-panel" id="ai-panel" style="display:none">
+            <div class="ai-header">
+              <span>🤖 AI Assistant</span>
+              <button onclick="closeAI()">✕</button>
+            </div>
+            <div class="ai-content" id="ai-content">
+              <div class="ai-loading">Thinking...</div>
+            </div>
+            <div class="ai-actions" id="ai-actions">
+              <button class="btn-ai-action" onclick="askAI('explain')">Full Explanation</button>
+            </div>
+          </div>
+        </div>
+        <div class="quiz-footer">
+          <button class="btn-nav prev" id="prev-btn" onclick="navigate(-1)">← Previous</button>
+          <div class="footer-center">
+            <span id="footer-progress">1 / 25</span>
+          </div>
+          <button class="btn-nav next" id="next-btn" onclick="navigate(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-results" class="screen">
+  <div class="results-container">
+    <div class="results-header">
+      <div class="logo">UI<span>Prep</span></div>
+      <h2>Exam Results</h2>
+    </div>
+    <div class="score-hero">
+      <div class="score-circle" id="score-circle">
+        <div class="score-percent" id="score-percent">0%</div>
+        <div class="score-label">Overall Score</div>
+      </div>
+      <div class="score-breakdown" id="score-breakdown"></div>
+    </div>
+    <div class="results-message" id="results-message"></div>
+    <div class="subject-scores" id="subject-scores"></div>
+    <div class="review-section">
+      <div class="review-tabs">
+        <button class="rtab active" onclick="setReviewTab('all', this)">All Questions</button>
+        <button class="rtab" onclick="setReviewTab('wrong', this)">Wrong</button>
+        <button class="rtab" onclick="setReviewTab('unanswered', this)">Unanswered</button>
+        <button class="rtab" onclick="setReviewTab('correct', this)">Correct</button>
+      </div>
+      <div class="review-list" id="review-list"></div>
+    </div>
+    <div class="results-footer">
+      <button class="btn-secondary" onclick="showScreen('home')">← Home</button>
+      <button class="btn-primary" onclick="retrySession()">↺ Retry</button>
+      <button class="btn-secondary" onclick="openSetup(lastMode)">+ New Session</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal">
+    <h3>Submit Exam?</h3>
+    <p id="submit-modal-msg">You have unanswered questions. Submit anyway?</p>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal('submit-modal')">Continue Exam</button>
+      <button class="btn-primary" onclick="submitExam()">Submit Now</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ai-key-modal">
+  <div class="modal ai-modal">
+    <div class="ai-modal-header">
+      <h3>🤖 AI Setup — Get Free Access</h3>
+      <button onclick="closeModal('ai-key-modal')">✕</button>
+    </div>
+    <div class="ai-modal-body">
+      <p>UIPrep uses Google Gemini AI (free tier) to explain questions and give hints.</p>
+      <div class="ai-steps">
+        <div class="ai-step">
+          <span class="step-num">1</span>
+          <span>Go to <strong>aistudio.google.com</strong> and sign in with Google</span>
+        </div>
+        <div class="ai-step">
+          <span class="step-num">2</span>
+          <span>Click <strong>"Get API key"</strong> → Create API key (completely free)</span>
+        </div>
+        <div class="ai-step">
+          <span class="step-num">3</span>
+          <span>Add the key to your Replit secrets as <strong>GEMINI_API_KEY</strong></span>
+        </div>
+      </div>
+      <div class="ai-status" id="ai-status-display">
+        Checking AI status...
+      </div>
+      <p class="ai-note">Without an API key, AI will still work using built-in explanations.</p>
+    </div>
+    <button class="btn-primary full-width" onclick="closeModal('ai-key-modal')">Got It</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
