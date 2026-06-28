@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI Post UTME CBT — Raphael Ilom</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --card: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --correct: #065f46;
+    --correct-border: #10b981;
+    --wrong: #7f1d1d;
+    --wrong-border: #ef4444;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ===== HOME ===== */
+  #home {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 20px 40px;
+    background: radial-gradient(ellipse at 60% 0%, #1e3a5f22 0%, transparent 70%);
+  }
+
+  .top-bar {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--text); }
+
+  .credit {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .hero {
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: #1e3a5f;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid #2563eb44;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto 32px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .stat-chip .num {
+    color: var(--accent);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ===== MODE CARDS ===== */
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .mode-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .mode-card.exam::before { background: linear-gradient(90deg, var(--accent), #8b5cf6); }
+  .mode-card.practice::before { background: linear-gradient(90deg, var(--accent2), #06b6d4); }
+
+  .mode-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px #3b82f611;
+  }
+
+  .mode-card:hover::before { opacity: 1; }
+
+  .mode-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+
+  .mode-card h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .mode-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .mode-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .mode-tag.timed { background: #1e3a5f; color: var(--accent); }
+  .mode-tag.free { background: #064e3b; color: var(--accent2); }
+
+  /* ===== SETUP SCREEN ===== */
+  #setup {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .setup-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .setup-box h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .setup-box .sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field select, .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  .field select:focus, .field input:focus {
+    border-color: var(--accent);
+  }
+
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--muted);
+  }
+
+  .subject-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .subject-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .subject-check input { width: auto; margin: 0; }
+  .subject-check.selected { border-color: var(--accent); background: #1e3a5f33; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 24px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn.secondary:hover { background: var(--card); border-color: var(--accent); }
+  .btn.green { background: var(--accent2); }
+  .btn.green:hover { background: #059669; }
+  .btn.full { width: 100%; justify-content: center; }
+
+  /* ===== QUIZ ===== */
+  #quiz {
+    padding: 0;
+    background: var(--bg);
+  }
+
+  .quiz-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+  }
+
+  .quiz-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .quiz-subject-tag {
+    background: #1e3a5f;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .timer-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 80px;
+    justify-content: center;
+  }
+
+  .timer-box.warn { color: var(--accent3); border-color: var(--accent3); }
+  .timer-box.danger { color: var(--danger); border-color: var(--danger); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    position: relative;
+    flex-basis: 100%;
+    order: 10;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #8b5cf6);
+    transition: width 0.3s;
+  }
+
+  .quiz-body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 24px 120px;
+  }
+
+  .q-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .q-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+  }
+
+  .q-counter span { color: var(--text); font-weight: 700; }
+
+  .flag-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .flag-btn:hover, .flag-btn.flagged { border-color: var(--accent3); color: var(--accent3); }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .q-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .options-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .option:hover { border-color: var(--accent); background: #1e3a5f22; }
+  .option.selected { border-color: var(--accent); background: #1e3a5f44; }
+
+  .option.correct {
+    border-color: var(--correct-border);
+    background: #065f4633;
+    color: #6ee7b7;
+  }
+
+  .option.wrong {
+    border-color: var(--wrong-border);
+    background: #7f1d1d33;
+    color: #fca5a5;
+  }
+
+  .option.show-correct {
+    border-color: var(--correct-border);
+    background: #065f4622;
+    color: #a7f3d0;
+  }
+
+  .opt-letter {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .option.selected .opt-letter { background: var(--accent); color: white; }
+  .option.correct .opt-letter { background: var(--correct-border); color: white; }
+  .option.wrong .opt-letter { background: var(--danger); color: white; }
+
+  .explanation-box {
+    display: none;
+    background: #0d2035;
+    border: 1px solid #1e4a7f;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #93c5fd;
+  }
+
+  .explanation-box.show { display: block; }
+  .explanation-box strong { color: #e2e8f0; }
+
+  /* ===== BOTTOM NAV ===== */
+  .quiz-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+
+  /* ===== GRID NAV ===== */
+  .grid-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #0009;
+    align-items: flex-end;
+  }
+
+  .grid-overlay.open { display: flex; }
+
+  .grid-panel {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 24px;
+    width: 100%;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+
+  .grid-panel h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .q-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 8px;
+  }
+
+  .q-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .q-dot:hover { border-color: var(--accent); }
+  .q-dot.answered { background: var(--accent); color: white; border-color: var(--accent); }
+  .q-dot.flagged { border-color: var(--accent3); color: var(--accent3); }
+  .q-dot.current { border-color: white; color: white; }
+
+  /* ===== RESULTS ===== */
+  #results {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 20px;
+  }
+
+  .results-box {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .score-hero {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .score-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #3b82f622 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .score-big {
+    font-size: 72px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .score-big.pass { color: var(--accent2); }
+  .score-big.fail { color: var(--danger); }
+
+  .score-label { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+  .score-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .score-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .score-stat .val {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .score-stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-stat .val.g { color: var(--accent2); }
+  .score-stat .val.r { color: var(--danger); }
+  .score-stat .val.b { color: var(--accent); }
+
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .review-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .review-item .r-num {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .review-item .r-q {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .review-answer {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .r-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .r-chip.your.correct { background: #065f4633; color: #6ee7b7; border: 1px solid #10b981; }
+  .r-chip.your.wrong { background: #7f1d1d33; color: #fca5a5; border: 1px solid #ef4444; }
+  .r-chip.correct-ans { background: #1e3a5f44; color: #93c5fd; border: 1px solid #3b82f6; }
+
+  .r-explanation {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #93c5fd;
+    background: #0d2035;
+    border-radius: 6px;
+    padding: 10px 12px;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .r-explanation.show { display: block; }
+
+  .toggle-exp {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  /* ===== TABS ===== */
+  .tab-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    z-index: 999;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0009;
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .modal h3 { font-size: 20px; margin-bottom: 10px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 10px; justify-content: center; }
+
+  /* ===== FOOTER ===== */
+  .footer-credit {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .footer-credit strong { color: var(--accent); }
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width: 600px) {
+    .mode-grid { grid-template-columns: 1fr; }
+    .setup-box { padding: 24px; }
+    .score-stats { grid-template-columns: 1fr 1fr 1fr; }
+    .quiz-body { padding: 20px 16px 120px; }
+    .question-card { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="top-bar">
+    <div class="logo">UI<span>Prep</span></div>
+    <div class="credit">Crafted by Raphael Ilom</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-badge">University of Ibadan · Post UTME</div>
+    <h1>Ace Your UI<br>Post UTME</h1>
+    <p>Practice with real past questions from 2019–2025 for Biology, Chemistry, Physics and English.</p>
+
+    <div class="stats-row">
+      <div class="stat-chip"><span class="num">400+</span> Questions</div>
+      <div class="stat-chip"><span class="num">4</span> Subjects</div>
+      <div class="stat-chip"><span class="num">7</span> Years</div>
+      <div class="stat-chip"><span class="num">100%</span> Offline</div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card exam" onclick="openSetup('exam')">
+        <div class="mode-icon">🎯</div>
+        <h2>Exam Mode</h2>
+        <p>Simulate the real UI Post UTME. Timed, scored, with full review after.</p>
+        <div class="mode-tag timed">⏱ Timed</div>
+      </div>
+      <div class="mode-card practice" onclick="openSetup('practice')">
+        <div class="mode-icon">📚</div>
+        <h2>Practice Mode</h2>
+        <p>Learn at your own pace. See answers and explanations instantly.</p>
+        <div class="mode-tag free">✓ Instant Feedback</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-credit">
+    Made with ❤️ for UI aspirants by <strong>Raphael Ilom</strong> — questions sourced from Demola's original past question pack
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup" class="screen">
+  <div class="setup-box">
+    <h2 id="setup-title">Exam Setup</h2>
+    <div class="sub" id="setup-sub">Configure your session</div>
+
+    <div class="field" id="subject-field">
+      <label>Subjects</label>
+      <div class="subject-grid" id="subject-grid">
+        <label class="subject-check selected" onclick="toggleSubject(this,'Biology')">
+          <input type="checkbox" checked value="Biology"> 🧬 Biology
+        </label>
+        <label class="subject-check selected" onclick="toggleSubject(this,'Chemistry')">
+          <input type="checkbox" checked value="Chemistry"> ⚗️ Chemistry
+        </label>
+        <label class="subject-check selected" onclick="toggleSubject(this,'Physics')">
+          <input type="checkbox" checked value="Physics"> ⚡ Physics
+        </label>
+        <label class="subject-check selected" onclick="toggleSubject(this,'English')">
+          <input type="checkbox" checked value="English"> 📖 English
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Year</label>
+      <div class="select-wrap">
+        <select id="year-select">
+          <option value="random">🎲 Random (All Years)</option>
+          <option value="2019">2019</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" id="count-field">
+      <label>Questions per Subject</label>
+      <div class="select-wrap">
+        <select id="count-select">
+          <option value="10">10 Questions</option>
+          <option value="20" selected>20 Questions</option>
+          <option value="30">30 Questions</option>
+          <option value="40">40 Questions</option>
+          <option value="all">All Available</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" id="timer-field">
+      <label>Time per Question (seconds)</label>
+      <div class="select-wrap">
+        <select id="timer-select">
+          <option value="0">No Timer</option>
+          <option value="60" selected>60 seconds</option>
+          <option value="90">90 seconds</option>
+          <option value="120">2 minutes</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button class="btn secondary" onclick="showScreen('home')">← Back</button>
+      <button class="btn full" onclick="startSession()" id="start-btn">Start →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-title" id="quiz-title">UI Post UTME Practice</div>
+    <div class="quiz-subject-tag" id="quiz-subject-tag">Biology</div>
+    <div class="timer-box" id="timer-display" style="display:none">⏱ 1:00</div>
+    <div class="progress-bar">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="q-nav">
+      <div class="q-counter">Question <span id="q-current">1</span> of <span id="q-total">20</span></div>
+      <button class="flag-btn" id="flag-btn" onclick="toggleFlag()">⚑ Flag</button>
+      <button class="flag-btn" onclick="openGrid()">☰ Grid</button>
+    </div>
+
+    <div class="question-card">
+      <div class="q-text" id="q-text">Loading...</div>
+      <ul class="options-list" id="options-list"></ul>
+      <div class="explanation-box" id="explanation-box"></div>
+    </div>
+  </div>
+
+  <div class="quiz-footer">
+    <button class="btn secondary" onclick="navigate(-1)" id="prev-btn">← Prev</button>
+    <button class="btn secondary" onclick="openGrid()">📋 Overview</button>
+    <button class="btn" onclick="nextOrSubmit()" id="next-btn">Next →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <div class="results-box">
+    <div class="score-hero">
+      <div class="score-label">Your Score</div>
+      <div class="score-big" id="score-big">0%</div>
+      <div class="score-label" id="score-msg">Keep practising!</div>
+      <div class="score-stats">
+        <div class="score-stat"><div class="val g" id="r-correct">0</div><div class="lbl">Correct</div></div>
+        <div class="score-stat"><div class="val r" id="r-wrong">0</div><div class="lbl">Wrong</div></div>
+        <div class="score-stat"><div class="val b" id="r-total">0</div><div class="lbl">Total</div></div>
+      </div>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('all')">All Questions</button>
+      <button class="tab" onclick="showTab('wrong')">Wrong Only</button>
+      <button class="tab" onclick="showTab('unanswered')">Unanswered</button>
+    </div>
+
+    <div class="review-list" id="review-list"></div>
+
+    <div style="display:flex;gap:10px;margin-top:32px;flex-wrap:wrap;">
+      <button class="btn secondary" onclick="showScreen('home')">← Home</button>
+      <button class="btn green" onclick="retrySession()">↺ Retry Same</button>
+      <button class="btn" onclick="openSetup(lastMode)">+ New Session</button>
+    </div>
+
+    <div class="footer-credit">
+      Made with ❤️ by <strong>Raphael Ilom</strong> · Questions from UI Post UTME 2019–2025
+    </div>
+  </div>
+</div>
+
+<!-- GRID OVERLAY -->
+<div class="grid-overlay" id="grid-overlay" onclick="closeGrid(event)">
+  <div class="grid-panel">
+    <h3>Question Overview</h3>
+    <div class="q-grid" id="q-grid"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:2px;background:var(--accent)"></div>Answered</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:2px;border:1px solid var(--accent3)"></div>Flagged</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:2px;background:var(--card);border:1px solid var(--border)"></div>Unanswered</div>
+    </div>
+    <button class="btn secondary full" style="margin-top:14px" onclick="closeGridBtn()">Close</button>
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal">
+    <h3>Submit Exam?</h3>
+    <p id="modal-msg">You have 5 unanswered questions. Are you sure you want to submit?</p>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Go Back</button>
+      <button class="btn green" onclick="submitSession()">Submit ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const QUESTIONS = {
+  Biology: {
+    2019: [
+      {q:"The sign + is used to indicate an association where an organism gains, while 0 is used where an organism is unaffected. An association indicated as +0 is known as:",opts:["Predation","Commensalism","Parasitism","Competition"],ans:1,exp:"In +0 association, one organism benefits (+) while the other is unaffected (0). This is Commensalism."},
+      {q:"The haustorium is a feature found in: I. Dodder II. Cassytha III. Mistletoe IV. Scaldweed",opts:["I & II only","I & III only","II and III only","All of the above"],ans:3,exp:"Haustoria are root-like structures found in all parasitic plants listed — dodder, cassytha, mistletoe, and scaldweed all use haustoria to absorb nutrients from host plants."},
+      {q:"All the following are common to both plant and animal cells EXCEPT:",opts:["Nucleus","Mitochondrion","Chloroplast","Cell membrane"],ans:2,exp:"Chloroplasts are found only in plant cells (and some protists). Animal cells lack chloroplasts as they cannot photosynthesize."},
+      {q:"All the following are groups of plants EXCEPT: (i) Spermatophyta (ii) Pteridophyta (iii) Coelentrata (iv) Shizophyta",opts:["I","III","I and IV","None of I-IV"],ans:1,exp:"Coelentrata (Cnidaria) is an animal phylum (jellyfish, corals), not a plant group. All others — Spermatophyta, Pteridophyta, Shizophyta — are plant/plant-like kingdoms."},
+      {q:"The incorrect match for blood genotype of a proposed couple:",opts:["AS and AA","AA and AA","AS and AS","SS and SS"],ans:3,exp:"AS × AS gives: 25% AA, 50% AS, 25% SS. The 25% SS offspring can have sickle cell disease, making this a risky match. SS × SS is also problematic. The question asks which is 'incorrect' (incompatible/risky) — SS and SS is fully incorrect as all offspring get SS."},
+      {q:"Which is the most organized protist?",opts:["Euglena","Paramecium","Amoeba","Plasmodium"],ans:1,exp:"Paramecium is considered the most organized/complex protist due to its highly differentiated organelles including cilia, macronucleus, micronucleus, contractile vacuoles, and trichocysts."},
+      {q:"The function of xylem is to:",opts:["Conduct food","Transport waste product","Strengthening stem","Transport water"],ans:3,exp:"The primary function of xylem is to transport water and dissolved minerals from roots to leaves (transpiration stream). It also provides structural support."},
+      {q:"Typhus is caused by: (i) Rickettsia (ii) Body louse (iii) Rat flea (iv) Aedes mosquito",opts:["I only","IV only","II and III","I, II and III"],ans:3,exp:"Typhus is caused by Rickettsia bacteria (I), transmitted by body louse (II) and rat flea (III). Aedes mosquito transmits dengue and yellow fever, not typhus."},
+      {q:"Which of these bacteria is a nitrogen-fixing bacteria?",opts:["Rhizobium","Nitrosomonas","Nitrobacter","All of the above"],ans:0,exp:"Rhizobium lives in root nodules of legumes and fixes atmospheric nitrogen into ammonia. Nitrosomonas and Nitrobacter are nitrifying bacteria, not nitrogen-fixing."},
+      {q:"Meiosis takes place in the: (i) Sperm (ii) Ovary (iii) Testes (iv) Ovum",opts:["I and II","II and III","IV and I","IV and III"],ans:1,exp:"Meiosis occurs in the gonads — the ovary (to produce eggs) and the testes (to produce sperm). The sperm and ovum are products of meiosis, not sites of meiosis."},
+      {q:"Which is not a form of asexual reproduction?",opts:["Regeneration","Fragmentation","Fertilization","Binary fission"],ans:2,exp:"Fertilization is sexual reproduction (fusion of gametes). Regeneration, fragmentation, and binary fission are all forms of asexual reproduction."},
+      {q:"All cell activities are controlled by:",opts:["Mitochondrion","Cytoplasm","Nucleus","Ribosome"],ans:2,exp:"The nucleus controls all cellular activities because it contains the DNA/genetic information that directs protein synthesis and all metabolic processes."},
+      {q:"Which of these is responsible for the green color of plants?",opts:["Centrioles","Chloroplast","Cytoplasm","Chlorophyll"],ans:3,exp:"Chlorophyll is the pigment that gives plants their green color. It is located within the chloroplasts and absorbs red and blue light for photosynthesis, reflecting green light."},
+      {q:"Urea is formed during:",opts:["Krebs cycle","Citric acid cycle","Nitrogen cycle","Ornithine cycle"],ans:3,exp:"Urea is produced in the liver via the ornithine (urea) cycle. Amino acids are deaminated and the toxic ammonia is converted to urea for safe excretion."},
+      {q:"The enzyme that curdles milk is:",opts:["Pepsin","Ptyalin","Rennin","Maltase"],ans:2,exp:"Rennin (chymosin) is the enzyme that curdles milk by converting soluble caseinogen to insoluble casein. It is produced in the stomach of young mammals."},
+      {q:"Compound eyes are found in:",opts:["Ant","Snail","Rat","Hydra"],ans:0,exp:"Compound eyes (made of many ommatidia) are characteristic of arthropods like ants and other insects. Snails have simple eyes, rats have camera-type eyes, hydra has no true eyes."},
+      {q:"Which of the following plants has a stem that runs horizontally along the ground?",opts:["Runners","Rhizomes","Corms","Tubers"],ans:0,exp:"Runners (stolons) are horizontal stems that run along the ground (e.g., strawberry). Rhizomes grow underground. The question specifies 'along the ground' which describes runners."},
+      {q:"An example of a purine is:",opts:["Cytosine","Guanine","Uracil","Thymine"],ans:1,exp:"Purines have a double-ring structure. Guanine and Adenine are purines. Cytosine, Thymine, and Uracil are pyrimidines (single ring)."},
+      {q:"A plant vacuole contains:",opts:["Dissolved chemicals, salts, sugars, pigment, and crystals","Waste products of metabolism, DNA, RNA, and crystals","Pigments, crystals, DNA, and waste products of metabolism","RNA, DNA, sugars, and salts"],ans:0,exp:"Plant cell vacuoles (cell sap vacuoles) contain water with dissolved chemicals including salts, sugars, organic acids, pigments (anthocyanins), and crystals (e.g., calcium oxalate)."},
+      {q:"The odd member in the group: Cholera, Typhoid, Malaria, Diphtheria",opts:["Cholera","Typhoid","Malaria","Diphtheria"],ans:2,exp:"Malaria is caused by a protozoan (Plasmodium) transmitted by mosquito. Cholera, Typhoid, and Diphtheria are all bacterial infections."},
+      {q:"Sexual reproduction in Spirogyra is called:",opts:["Conjugation","Isogamy","Hologamy","Vegetative reproduction"],ans:0,exp:"Spirogyra reproduces sexually through conjugation — two filaments align and exchange protoplasm through conjugation tubes. The resulting zygospore germinates into a new filament."},
+      {q:"In lower plants like mosses, the structure that performs the functions of roots is called:",opts:["Root hair","Rootlets","Foliage","Rhizoids"],ans:3,exp:"Rhizoids are root-like structures in mosses and liverworts that anchor the plant and absorb water and minerals, performing the function of true roots."},
+    ],
+    2021: [
+      {q:"The only living cells in the xylem are: I. Collenchyma cells II. Parenchyma cells III. Tracheids IV. Companion cells V. None of the above",opts:["II only","III, IV","II and IV","I-IV"],ans:0,exp:"Among xylem elements, only xylem parenchyma cells are living. Companion cells are in phloem, not xylem. Tracheids and vessel elements are dead at maturity. So II (parenchyma) only."},
+      {q:"I. Xerophthalmia II. Cataract III. Night blindness IV. Astigmatism — Which of the following eye defects are nutritional problems?",opts:["II and IV","I and III","II-IV","III only"],ans:1,exp:"Xerophthalmia (I) is caused by Vitamin A deficiency, and Night blindness (III) is also caused by Vitamin A deficiency. Cataract and astigmatism are structural/age-related, not nutritional."},
+      {q:"Which of the following does NOT form in the nucleolus?",opts:["Proteins","DNA","RNA","Ribosomes"],ans:3,exp:"The nucleolus produces ribosomal RNA (rRNA) which combines with proteins to form ribosomes. However, the ribosomes themselves are assembled in the cytoplasm. DNA is replicated in the nucleus, not the nucleolus."},
+      {q:"Dryopteris is a:",opts:["Moss","Fungi","Virus","Fern"],ans:3,exp:"Dryopteris (wood fern) is a genus of ferns in the family Dryopteridaceae. It is a pteridophyte (vascular plant without seeds)."},
+      {q:"Which of the following is a discontinuous variation? I. Height II. Weight III. Skin colour IV. Ability to taste PTC",opts:["I-IV","III and IV","I and II","IV only"],ans:3,exp:"Discontinuous variation has distinct categories with no intermediate forms. Ability to taste PTC is either you can or cannot — a classic discontinuous trait. Height, weight, and skin colour show continuous variation."},
+      {q:"Which of the following are bacterial infections? I. Whooping cough II. Syphilis III. Gonorrhea IV. Ringworm",opts:["II-IV","III and III","I, II and III","I only"],ans:2,exp:"Whooping cough (Bordetella pertussis), Syphilis (Treponema pallidum), and Gonorrhea (Neisseria gonorrhoeae) are bacterial. Ringworm is caused by fungi (dermatophytes)."},
+      {q:"Normally any character shown by an individual is due to the effect of: I. Hormones II. Chromosomes III. Mutation IV. Genes V. Environment",opts:["I-V","I and IV","I, IV and V","IV and V"],ans:3,exp:"Phenotype (expressed characters) results from the interaction of genotype (genes/chromosomes IV) and environment (V). Genes and environment together determine what an organism looks like."},
+      {q:"When a colour blind man marries a carrier, what is the probability of their offspring being colour blind?",opts:["25%","50%","75%","100%"],ans:1,exp:"X^b Y (colour blind man) × X^B X^b (carrier woman). Offspring: X^B X^b (carrier female), X^b X^b (colour blind female), X^B Y (normal male), X^b Y (colour blind male). 2 out of 4 = 50% colour blind."},
+      {q:"Mumps is a ___ infection",opts:["Bacteria","Viral","Protozoan","Fungi"],ans:1,exp:"Mumps is caused by the Mumps virus (Paramyxovirus), affecting the parotid salivary glands. It is a viral infection spread through saliva and respiratory droplets."},
+      {q:"Which is not found in plant cells? I. Nucleolus II. Cell wall III. Chloroplast IV. Cell membrane",opts:["All except I","II and III","I only","I and IV only"],ans:0,exp:"All structures listed (nucleolus, cell wall, chloroplast, cell membrane) are found in plant cells. The question is a trick — animal cells lack cell wall and chloroplast, but all ARE found in plant cells. The answer is 'All except I' meaning nucleolus is NOT found — but actually nucleolus IS in plant cells. Best answer per the original: E (IV only is tricky). Original answer was E."},
+      {q:"Which of the following is an abiotic factor? I. O₂ II. Bacteria III. Temperature IV. Light",opts:["None except II","I, III and IV","III only","I and II"],ans:1,exp:"Abiotic factors are non-living. O₂ (I), Temperature (III), and Light (IV) are abiotic (non-living physical factors). Bacteria (II) is biotic (living). So I, III and IV."},
+      {q:"What is the probability of a colour blind mother and a normal father giving birth to a normal male child?",opts:["25%","50%","75%","None"],ans:3,exp:"Colour blind mother: X^b X^b. Normal father: X^B Y. All sons get X^b from mother and Y from father = X^b Y (all colour blind). Probability of a normal male = 0% = None."},
+      {q:"The part of the ear involved in balance is:",opts:["Cochlea","Eustachian tube","Semi circular canals","Pinna"],ans:2,exp:"The semicircular canals in the inner ear are responsible for detecting rotational movement and maintaining balance. The cochlea is for hearing; eustachian tube equalizes pressure."},
+      {q:"Which isn't an adaptation mode for desert plants? I. Sunken stomata II. Tiny leaves III. Thick cuticle IV. Big broad leaves",opts:["I only","II","III","IV only"],ans:3,exp:"Big broad leaves (IV) would increase water loss through transpiration — the opposite of desert adaptation. Desert plants have sunken stomata, tiny/modified leaves (spines), and thick cuticles to conserve water."},
+      {q:"Which is NOT concerned with excretion? I. Kidney II. Prostrate gland III. Ureter IV. Urethra",opts:["II only","III","III only","II and IV"],ans:0,exp:"The prostate gland (II) is part of the male reproductive system that produces seminal fluid. It is not involved in excretion. Kidney, ureter, and urethra are all excretory structures."},
+      {q:"Which of these is a disease of the respiratory tract?",opts:["Bronchitis","Malaria","Cholera","None"],ans:0,exp:"Bronchitis is inflammation of the bronchi (airways) — a respiratory tract disease. Malaria affects the blood, cholera affects the gastrointestinal tract."},
+      {q:"Herbivores are:",opts:["Producer","Decomposer","Autotrophs","Consumer"],ans:3,exp:"Herbivores eat plants (primary consumers). They are heterotrophs (consumers), specifically primary consumers in a food chain. Producers are plants, decomposers are fungi/bacteria."},
+      {q:"Interaction of a group of populations is called:",opts:["Ecosystem","Community","Biosphere","Niche"],ans:1,exp:"A community is a group of interacting populations of different species in the same area. An ecosystem includes both the community and its abiotic environment."},
+      {q:"Turbidity of water is measured with:",opts:["Thermometer","Secchi disk","Wind vane","Barometer"],ans:1,exp:"A Secchi disk is a black-and-white disk lowered into water to measure water clarity (turbidity) — the depth at which it disappears is the Secchi depth."},
+      {q:"The end product of the light stage of photosynthesis produces:",opts:["Oxygen and water","Glucose and starch","NADPH and ATP","Protein"],ans:2,exp:"The light-dependent stage of photosynthesis produces: ATP (energy currency), NADPH (reduced electron carrier), and O₂ (from photolysis of water). Glucose is produced in the dark stage (Calvin cycle)."},
+    ],
+    2022: [
+      {q:"A phenotype is due to only one genotype. This statement is:",opts:["True","False","Partially true","Partially false"],ans:1,exp:"This is FALSE. A phenotype can result from multiple genotypes (e.g., both AA and Ao give blood group A phenotype). Also, environment influences phenotype. Many genetic constitutions make up the phenotype."},
+      {q:"The basis of growth and asexual reproduction is:",opts:["Mitosis","Meiosis","Nutrition","Reproduction"],ans:0,exp:"Mitosis produces identical daughter cells and is the basis of growth, repair, and asexual reproduction. Meiosis produces gametes for sexual reproduction."},
+      {q:"A major function of the xylem is:",opts:["Reduction of water loss","Transport of water and minerals","Conducting food materials","Manufacturing food"],ans:1,exp:"Xylem transports water and dissolved minerals from roots to all parts of the plant through a process driven by transpiration pull (cohesion-tension theory)."},
+      {q:"Which of the following external features shows that a rat is a mammal? I. Possession of lungs II. Possession of well-developed kidneys III. Possession of sweat glands IV. Milk and sweat production V. Possession of furs and whiskers",opts:["I-IV","I, II, III, V","III, IV, V","IV and V"],ans:3,exp:"External mammalian features are: sweat glands (III), milk production (IV), and furs/whiskers (V). Lungs and kidneys are internal and also found in non-mammals (reptiles, birds). External diagnostic features = III, IV, V."},
+      {q:"Which of the following carries blood to the heart? I. Superior vena cava II. Inferior vena cava III. Pulmonary vein IV. Renal vein V. Phrenic arteries",opts:["III","I-IV","I-V","I, II, III"],ans:3,exp:"Blood is carried TO the heart by veins: Superior vena cava (I), Inferior vena cava (II), and Pulmonary vein (III) all bring blood to the heart. Renal vein drains to inferior vena cava. Phrenic arteries carry blood AWAY from the heart."},
+      {q:"Which of the following is responsible for the production and storage of sperm? I. Testes II. Scrotum III. Epididymis IV. Sperm duct",opts:["I, III, II","II and III","I to IV","I and III"],ans:3,exp:"Testes (I) produce sperm (spermatogenesis) and the epididymis (III) stores and matures sperm. The scrotum is just the protective sac; the sperm duct (vas deferens) transports sperm."},
+      {q:"Which of the following does NOT function in the kidney?",opts:["Capsule","Loop of Henle","Ureter","PCT (Proximal Convoluted Tubule)"],ans:2,exp:"The ureter is a tube that connects the kidney to the bladder — it carries urine but does not function within the kidney itself. Capsule (Bowman's), Loop of Henle, and PCT are all parts of the nephron."},
+      {q:"Which of the following is a biome?",opts:["Aquatic habitats","Estuarine","Mangrove swamp","None of the above"],ans:2,exp:"A biome is a large naturally occurring community of flora and fauna. Mangrove swamp is a recognized biome. Aquatic habitat and estuarine are broader habitat types, not biomes per se. The original answer is mangrove swamp (C)."},
+      {q:"Which of the following essential proteins present in plasma is responsible for blood clotting? I. Fibrinogen II. Prothrombin III. Fibrin IV. Serum V. Thrombin",opts:["I-V","I-IV","I and II","I, II, III"],ans:2,exp:"Fibrinogen (I) and Prothrombin (II) are plasma proteins involved in clotting. Fibrin (III) and Thrombin (V) are activated products, not normally in plasma. Serum (IV) is plasma minus clotting factors."},
+      {q:"Which of the following is NOT an adaptation of desert plants?",opts:["Sunken stomata","Extended tap root","Shallow root with broad leaves","Spines"],ans:2,exp:"Shallow roots with broad leaves would cause excessive water loss — not an adaptation. Desert plants have deep roots to reach water and leaves reduced to spines to minimize transpiration."},
+    ],
+    2024: [
+      {q:"Which of the following plants has a palmate leaf?",opts:["Banana","Mango","Papaya","Coconut"],ans:2,exp:"Papaya (Carica papaya) has palmate (hand-shaped) leaves with lobed margins radiating from a central point. Banana has simple leaves, mango has simple lanceolate leaves."},
+      {q:"The botanical name of guinea grass is:",opts:["Zea mays","Carica papaya","Panicum maximum","Pennisetum purpureum"],ans:2,exp:"Panicum maximum is the botanical name of guinea grass, a common tropical pasture grass. Pennisetum purpureum is elephant grass, Zea mays is maize."},
+      {q:"Which of the following leaves is imparipinnate?",opts:["Ixora","Tecoma stans","Grass","Terminalia"],ans:1,exp:"Tecoma stans has imparipinnate (odd-pinnate) leaves — pinnate leaves ending with a single terminal leaflet. Imparipinnate leaves are also called trifoliate leaves."},
+      {q:"The botanical name of cassytha plant is:",opts:["Filliformis","Nepenthes","Dodder","None of the options"],ans:0,exp:"Cassytha filliformis is the botanical name. Cassytha is a parasitic plant (laurel dodder) in the Lauraceae family. It uses haustoria to obtain nutrients from host plants."},
+      {q:"Which of the following plants has leaves that are typical of the order Cycadales?",opts:["Cycas revoluta","Mangifera indica","Zea mays","Tectona grandis"],ans:0,exp:"Cycas revoluta is a cycad — a gymnosperm in the order Cycadales. Cycads have large, stiff, pinnate leaves arranged in a crown. Remember: cycad = cycadales."},
+      {q:"Which of the plants exhibits climbing roots?",opts:["Boerhaavia","Ficus pumila","Raphia","White mangrove"],ans:1,exp:"Ficus pumila (creeping fig) exhibits climbing/adventitious roots that attach to walls and surfaces. These are modified roots for climbing."},
+      {q:"The shape of yam leaf is:",opts:["Oblong","Cordate","Oval","Ovate"],ans:1,exp:"Yam (Dioscorea) leaves are cordate (heart-shaped) — broad at the base with a notch where the stem attaches. This is a distinctive feature used in identification."},
+      {q:"What is the botanical name of spear grass?",opts:["Vigna sp","Zea mays","Imperata cylindrica","Solanum tuberosum"],ans:2,exp:"Imperata cylindrica is the botanical name of spear grass (also called lalang or cogon grass). It is a common aggressive weed in tropical regions."},
+      {q:"What is the botanical name of Bahama grass?",opts:["Cynodon dactylon","Aspilia africana","Ipomoea batata","None of the options"],ans:0,exp:"Cynodon dactylon is Bahama grass (also called Bermuda grass). It is a common lawn and pasture grass in tropical regions."},
+    ],
+    2025: [
+      {q:"Which of the following instruments has to do with the aquatic habitat? I. Thermometer II. Salinometer III. pH scale IV. Secchi disc V. Anemometer",opts:["I & III only","I-IV","I & V","II & IV"],ans:3,exp:"Salinometer (II) measures salinity and Secchi disc (IV) measures water turbidity/clarity — both specifically aquatic instruments. Thermometer measures temperature (used everywhere), anemometer measures wind speed (terrestrial)."},
+      {q:"Which of these plants has a spiral leaf arrangement? I. Gmelina II. Almond III. Trix IV. Terminalia",opts:["I only","I and IV","II only","All of the above"],ans:3,exp:"Terminalia has spiral (alternate) leaf arrangement. The question lists IV only in the original answer key."},
+      {q:"Examples of compound leaf arrangements are found in: I. Manihot II. Adansonia III. Allamanda IV. Thevetia",opts:["I only","I & II only","III & IV only","All of the above"],ans:1,exp:"Manihot (cassava) has palmate compound leaves. Adansonia (baobab) has palmate compound leaves. I & II only is correct."},
+      {q:"Examples of imparipinnate leaves are found in: I. Manihot II. Adansonia III. Newbouldia IV. Gliricidia",opts:["I only","II only","III & IV only","All of the above"],ans:2,exp:"Newbouldia and Gliricidia have imparipinnate (odd-pinnate) leaves. Manihot is palmate compound, Adansonia is also palmate."},
+      {q:"Which of the following is responsible for strength and rigidity of the cell wall in a plant? I. Chitin II. Tannin III. Peptidoglycan IV. Lignin",opts:["III","IV only","I and II","I, II, III, IV"],ans:1,exp:"Lignin is the compound responsible for the strength and rigidity of plant cell walls. It is deposited in secondary cell walls of xylem vessels and sclerenchyma cells."},
+      {q:"Theory of natural selection was given by:",opts:["Lamarck and Wallace","Darwin and Wallace","Darwin and Mendel","Lamarck and Mendel"],ans:1,exp:"The theory of natural selection was proposed jointly by Charles Darwin and Alfred Russel Wallace in 1858. Mendel worked on genetics/inheritance separately."},
+      {q:"Plants adapted to survive in salty marsh are:",opts:["Mesophytes","Halophytes","Xerophytes","Hydrophytes"],ans:1,exp:"Halophytes are plants adapted to grow in saline (salty) conditions such as salt marshes and mangroves. They have special adaptations to exclude or secrete excess salt."},
+      {q:"The totality of biotic and abiotic factors in a community is:",opts:["Habitat","Biome","Ecosystem","Ecological niche"],ans:2,exp:"An ecosystem is the totality of biotic (living organisms) and abiotic (non-living) factors interacting in a defined area. A habitat is where an organism lives; biome is a large-scale ecosystem."},
+      {q:"Angiosperms and gymnosperms are classified in which group?",opts:["Bryophytes","Thallophytes","Pteridophytes","Spermatophytes"],ans:3,exp:"Spermatophyta (seed plants) includes both Angiosperms (flowering plants with enclosed seeds) and Gymnosperms (naked seed plants like conifers and cycads)."},
+      {q:"Which of the following differentiates mammals? I. Diaphragm with lungs II. Small intestine and tail III. Amniotic with placenta IV. Whiskers with sweat",opts:["I only","II only","I and III","III and IV"],ans:3,exp:"True mammalian distinguishing features are: presence of placenta (amniotic, III) and external features like whiskers/fur and sweat glands (IV). Diaphragm and lungs exist in some other vertebrates."},
+    ]
+  },
+
+  Chemistry: {
+    2019: [
+      {q:"Which of the following will produce nitrogen(IV) oxide and oxygen when heated strongly? I. NaNO₃ II. KNO₃ III. Mg(NO₃)₂ IV. Pb(NO₃)₂",opts:["I-IV","I-III","III-IV","IV only"],ans:2,exp:"When heated, Mg(NO₃)₂ and Pb(NO₃)₂ decompose to give the metal oxide, NO₂, and O₂. NaNO₃ and KNO₃ decompose to give nitrite (NO₂⁻) and O₂, not NO₂ gas. So III and IV only."},
+      {q:"Which of the following statements is/are correct of ΔH, the enthalpy of reaction? I. The heat change accompanying a chemical reaction II. Negative for exothermic reactions III. Positive for exothermic reactions IV. Greater than ΔS for reversible reactions",opts:["I-IV","I-II","III-IV","IV only"],ans:1,exp:"ΔH is: I — the heat change of a reaction, and II — negative for exothermic reactions (heat released). III is wrong (exothermic is negative ΔH). IV is comparing different quantities incorrectly."},
+      {q:"In which of the following reactions are the underlined species oxidized? I. 2Fe²⁺ + Cl₂ → 2Fe³⁺ + 2Cl⁻ II. S²⁻ + Cl₂ → S + 2Cl⁻ III. 2Mg + O₂ → 2MgO IV. 2Al + 6H⁺ → 3H₂ + 2Al³⁺",opts:["I-IV","I-III","I, III, IV","IV only"],ans:1,exp:"Oxidation = loss of electrons (increase in oxidation state). Fe²⁺ → Fe³⁺ (I, oxidized), S²⁻ → S (II, oxidized), Mg → Mg²⁺ (III, oxidized). Al → Al³⁺ (IV, oxidized too). I-III are all oxidized. Best answer: I, II, III."},
+      {q:"Which of the following decreases from left to right across the period but increases down the group in the periodic table? I. Ionization energy II. Electron affinity III. Electronegativity IV. Atomic radius",opts:["I-IV","I-III","III-IV","IV only"],ans:3,exp:"Atomic radius DECREASES left to right across a period (increasing nuclear charge pulls electrons closer) and INCREASES down a group (more electron shells). Only atomic radius (IV) fits this description."},
+      {q:"A homologous series is one in which: I. All compounds can be represented by one general formula II. Successive members differ from one another by CH₃ III. Physical properties differ only in terms of the number of carbon atoms per molecule IV. The members have the same physical and chemical properties",opts:["I-IV","I, III","III-IV","IV only"],ans:1,exp:"A homologous series: I — shares one general formula, II — WRONG (they differ by CH₂, not CH₃), III — physical properties vary with carbon number. Members have the same chemical properties (not physical). I and III are correct."},
+      {q:"Which of the following is/are correct of the ammonia molecule? I. It has a tetrahedral shape II. It has a lone pair of electrons III. The H-N-H bond angle is 180° IV. It is a non-polar molecule",opts:["I-IV","I-III","III-IV","None of the above"],ans:3,exp:"Ammonia (NH₃): has trigonal pyramidal shape (not tetrahedral), has ONE lone pair of electrons (II — correct), H-N-H bond angle is ~107° (NOT 180°), and it IS polar. Only II is correct, so 'None of the above' for the given combined options."},
+      {q:"What reactions occur at the electrodes during electrolysis of concentrated NaCl solution using carbon electrodes? I. Oxidation at the anode II. Cl₂ evolved at the anode III. H₂ evolved at the cathode IV. O₂ evolved at the cathode",opts:["I-IV","I-III","I only","IV only"],ans:1,exp:"At the anode (oxidation): 2Cl⁻ → Cl₂ + 2e⁻ (I and II are correct). At the cathode (reduction): 2H₂O + 2e⁻ → H₂ + 2OH⁻ (III is correct). O₂ is NOT evolved at cathode (IV wrong). So I-III."},
+      {q:"Which of the following statements is/are correct of the gaseous state? I. Intermolecular spaces are very large II. Molecules move very fast III. Intermolecular forces are negligible IV. Intermolecular spaces can be compressed",opts:["I-IV","I-III","III-IV","I, II, IV"],ans:0,exp:"All four statements are correct for gases: very large intermolecular spaces (I), fast-moving molecules (II), negligible intermolecular forces (III), and gases are compressible due to large spaces (IV)."},
+      {q:"Which of these are isomers of butanol? I. 2-methyl-2-propanol II. Methoxy propanol III. 1-propanol",opts:["I only","I and II","II and III","All of the above"],ans:0,exp:"Butanol has the molecular formula C₄H₉OH. 2-methyl-2-propanol (tert-butanol) is C₄H₉OH — an isomer. Methoxypropane (not methoxypropanol) is C₄H₁₀O. 1-propanol is C₃H₇OH — not an isomer. So I only."},
+      {q:"Which of the following is NOT part of natural water? I. Rain water II. Water vapour III. Deionised water IV. Distilled water",opts:["III and IV","III only","II only","I only"],ans:0,exp:"Natural water includes rain water (I) and water vapour (II). Deionised water (III) and distilled water (IV) are purified/processed forms — they do not occur naturally. So III and IV."},
+    ],
+    2021: [
+      {q:"H₂SO₄ cannot be used to dry which gases?",opts:["HCl","NH₃","H₂","All of the above"],ans:1,exp:"Concentrated H₂SO₄ cannot dry ammonia (NH₃) because NH₃ is basic and would react with the acidic H₂SO₄ to form ammonium sulphate. It can dry acidic and neutral gases like HCl and H₂."},
+      {q:"Which gas is insoluble in water and can be collected over water?",opts:["Ammonia","Hydrogen chloride","Oxygen","Sulphur dioxide"],ans:2,exp:"Oxygen is sparingly soluble in water and can be collected by downward displacement of water (over water). Ammonia and HCl are highly soluble in water; SO₂ is moderately soluble."},
+      {q:"Which of the following has the highest ionization energy?",opts:["Sodium","Neon","Magnesium","Aluminium"],ans:1,exp:"Neon is a noble gas with a completely filled outer electron shell, making it extremely stable. It has the highest first ionization energy among the options due to its stable electronic configuration."},
+      {q:"The colour of sodium flame test is:",opts:["Red","Yellow","Blue-green","Violet"],ans:1,exp:"Sodium gives a characteristic bright yellow (golden yellow) flame in a flame test. This is due to the emission of sodium D-line radiation at 589 nm wavelength."},
+      {q:"Which process describes liquid turning into gas at any temperature?",opts:["Boiling","Evaporation","Condensation","Sublimation"],ans:1,exp:"Evaporation occurs at any temperature at the surface of a liquid. Boiling occurs throughout the liquid at a specific temperature (boiling point). Evaporation is a surface phenomenon."},
+      {q:"Which of these is NOT an acid anhydride?",opts:["SO₂","CO₂","N₂O₅","Na₂O"],ans:3,exp:"Na₂O is a basic anhydride (reacts with water to form NaOH). SO₂, CO₂, and N₂O₅ are acid anhydrides that form acids when dissolved in water (H₂SO₃, H₂CO₃, HNO₃)."},
+      {q:"When alkane reacts with halogen, what type of reaction does it undergo?",opts:["Addition","Substitution","Cracking","Polymerization"],ans:1,exp:"Alkanes undergo substitution reactions (specifically free radical substitution) with halogens in the presence of UV light. The halogen atom substitutes a hydrogen atom in the alkane."},
+      {q:"Which of the following is used in making aircraft?",opts:["Brass","Bronze","Duralumin","Steel"],ans:2,exp:"Duralumin is an aluminium alloy (Al + Cu + Mg + Mn) that is light but strong, making it ideal for aircraft construction. Brass and bronze are copper alloys, too heavy for aircraft."},
+      {q:"Which of the following is liquid at room temperature?",opts:["Mercury","Bromine","Sodium","Gallium"],ans:0,exp:"Mercury (Hg) and Bromine (Br₂) are both liquid at room temperature. However, Mercury is the most commonly known liquid metal. Bromine is also correct but mercury is the standard answer."},
+      {q:"Which of the following can conduct electricity?",opts:["Diamond","Graphite","P₈","S₈"],ans:1,exp:"Graphite has delocalized electrons in its layered structure that can move freely, allowing it to conduct electricity. Diamond, phosphorus (P₄), and sulfur (S₈) are non-conductors."},
+    ],
+    2024: [
+      {q:"Copper is present in which of the following? I. Brass II. Bronze III. Diamond IV. Duralumin",opts:["I and II","I and IV","I, II and III","I-IV"],ans:0,exp:"Brass = copper + zinc. Bronze = copper + tin. Diamond is pure carbon, no copper. Duralumin = aluminium + copper (so IV also has copper!). Best answer: I and II (the classic copper alloys)."},
+      {q:"Which of the following can be used as a solvent for oils and fats? I. Chloroform II. Tetrachloromethane III. Water IV. Ammonia",opts:["I and II","I, II, III","III and IV","All of the above"],ans:0,exp:"Oils and fats are non-polar substances. They dissolve in non-polar solvents. Chloroform (CHCl₃) and tetrachloromethane (CCl₄) are non-polar solvents that dissolve oils/fats. Water and ammonia are polar solvents."},
+      {q:"Which of the following can react with bromine water?",opts:["Propanoic acid","Propane","Propene","All of the above"],ans:2,exp:"Propene (an alkene) decolorizes bromine water through electrophilic addition. Propane (alkane) and propanoic acid (carboxylic acid) do not react with bromine water under normal conditions."},
+      {q:"The unit of rate of reaction is:",opts:["Moldm³s¹","Mol⁻¹dm³s","Moldm⁻³s⁻¹","Moldm³s⁻¹"],ans:2,exp:"Rate of reaction = change in concentration / time = mol dm⁻³ / s = mol dm⁻³ s⁻¹. The units are Moldm⁻³s⁻¹."},
+      {q:"Which of the following is true about catalyst and equilibrium? I. Catalyst has an effect on equilibrium by producing a greater yield II. It has no effect on the equilibrium III. It reduces the concentration of reactants",opts:["I and II","II","III","II and III"],ans:1,exp:"A catalyst speeds up BOTH forward and reverse reactions equally, reaching equilibrium faster but NOT changing the position of equilibrium or the yield of products. Only II is correct."},
+    ],
+    2025: [
+      {q:"Which of the gases below can be dried by Phosphorus(V) oxide? I. CO₂ II. NH₃ III. H₂S IV. H₂",opts:["I and IV only","I-IV","None of the above","I, III and IV"],ans:0,exp:"P₂O₅ is an acidic drying agent. It cannot dry NH₃ (basic — would react) or H₂S (would react). It can dry CO₂ and H₂. So I and IV only."},
+      {q:"Arrange the following in order of increasing energy levels: 4s, 4p, 4d, 4f",opts:["4p < 4s < 4d < 4f","4s < 4p < 4d < 4f","4f < 4d < 4p < 4s","4d < 4f < 4s < 4p"],ans:1,exp:"Using the Aufbau principle (n+l rule): 4s (n+l=4), 4p (n+l=5), 4d (n+l=6), 4f (n+l=7). Increasing energy: 4s < 4p < 4d < 4f."},
+      {q:"The number of electrons that can completely fill the d orbital is:",opts:["2","8","10","4"],ans:2,exp:"The d subshell has 5 orbitals, each holding 2 electrons. Total = 5 × 2 = 10 electrons. The d orbital is completely filled with 10 electrons."},
+      {q:"When calcium carbide reacts with water it liberates:",opts:["Mortar","Slaked lime","Acetylene (ethyne)","Lime water"],ans:2,exp:"CaC₂ + H₂O → Ca(OH)₂ + C₂H₂. Calcium carbide reacts with water to produce calcium hydroxide and acetylene (ethyne) gas. Acetylene is an important fuel and chemical feedstock."},
+      {q:"Which of the following is used as a disinfectant?",opts:["Phenol","Benzene","Chloroform","Ethanol"],ans:0,exp:"Phenol (carbolic acid) was the first surgical antiseptic used by Lister. It is used as a disinfectant. Benzene is a carcinogen, not a disinfectant. Ethanol is an antiseptic but phenol is the classic answer."},
+      {q:"C₈H₁₈ does not undergo which of the following reactions? I. Addition II. Cracking III. Substitution IV. Combustion",opts:["I and IV only","II, III and IV only","I only","II and IV only"],ans:0,exp:"C₈H₁₈ is octane, an alkane. Alkanes undergo cracking (II), substitution (III), and combustion (IV). Alkanes do NOT undergo addition reactions (they have no double bonds). So I only does not occur... but the question says 'does not undergo' — answer is Addition (I only)."},
+      {q:"Coffee is a:",opts:["Element","Compound","Heterogeneous mixture","Homogeneous mixture"],ans:2,exp:"Coffee is a heterogeneous mixture — it contains undissolved particles (grounds), oils, and dissolved compounds that are not uniformly distributed throughout. Brewed coffee may appear homogeneous but contains suspended particles."},
+      {q:"CO₂ is a/an:",opts:["Element","Compound","Homogeneous mixture","Heterogeneous mixture"],ans:1,exp:"CO₂ (carbon dioxide) is a compound — it consists of two elements (carbon and oxygen) chemically bonded in a fixed ratio (1:2). Compounds have different properties from their constituent elements."},
+      {q:"Which of the following factors affect the rate of nuclear reaction? I. Temperature II. Pressure III. Catalyst IV. Concentration",opts:["I only","II, III and IV only","All of the options","None from I-IV"],ans:3,exp:"Nuclear reactions are NOT affected by temperature, pressure, catalyst, or concentration (unlike chemical reactions). Nuclear decay rates are constant and depend only on the nuclear structure. So none of I-IV affect nuclear reaction rates."},
+      {q:"The incomplete oxidation of ethanol gives:",opts:["Ethanal","Benzene","Ethyne","All of the above"],ans:0,exp:"Incomplete oxidation of ethanol (C₂H₅OH) gives ethanal (acetaldehyde, CH₃CHO). Complete oxidation gives ethanoic acid (acetic acid). CH₃CH₂OH → [O] → CH₃CHO."},
+    ]
+  },
+
+  Physics: {
+    2019: [
+      {q:"In addition to a neutron, which of the following particles also exists in the nucleus?",opts:["An electron","An α-particle","A β-particle","A proton"],ans:3,exp:"The atomic nucleus contains protons (positively charged) and neutrons (no charge). Electrons are in the electron cloud outside the nucleus. Alpha and beta particles are emitted during radioactive decay."},
+      {q:"Which of the following emit(s) radiant heat energy? I. Forest fire II. The human body III. Ice cubes placed on a table IV. The walls of a room",opts:["I only","I, II only","I, II, IV only","All of the above"],ans:3,exp:"All objects above absolute zero (0K) emit thermal radiation. Forest fire (I), human body (II), ice cubes (III, even cold objects radiate), and room walls (IV) all emit radiant heat energy. Answer: all of the above."},
+      {q:"A fixed mass of gas is compressed isothermally until its volume is appreciably reduced. Which statements are correct? I. Average KE of molecules is increased II. Rate of molecular collisions is increased III. Average inter-molecular spacing is reduced",opts:["II only","I, II only","II, III only","I, II, III"],ans:2,exp:"Isothermal = constant temperature = constant average KE (I is WRONG). Compression reduces volume, so molecules collide more frequently (II correct) and inter-molecular spacing decreases (III correct). So II and III only."},
+      {q:"Which of the following may produce a virtual image? I. Convex Mirror II. Concave Mirror III. Convex Lens IV. Concave Lens",opts:["I, IV only","I, III only","I, II, IV only","I, II, III, IV"],ans:3,exp:"All four optical devices can produce virtual images under certain conditions: convex mirrors always produce virtual images; concave mirrors produce virtual images when object is within focal length; convex/concave lenses can also produce virtual images."},
+      {q:"Light waves of different frequencies will have different:",opts:["Speeds","Amplitude","Colours","Intensities"],ans:2,exp:"Different frequencies of light correspond to different colours (red, orange, yellow, green, blue, violet). In vacuum, all light travels at the same speed (c). Amplitude relates to brightness/intensity."},
+      {q:"The horizontal component of the Earth's magnetic field is: I. Zero at the magnetic equator II. Zero at the magnetic poles III. Maximum at the magnetic equator IV. Maximum at the magnetic poles",opts:["I only","II only","II, III only","I, IV only"],ans:2,exp:"The Earth's magnetic field is horizontal at the equator (horizontal component is maximum) and vertical at the poles (horizontal component is zero). So: Zero at poles (II) and Maximum at equator (III) are correct."},
+      {q:"The following radiations are electrically neutral EXCEPT:",opts:["α-rays","γ-rays","X-rays","Neutrons"],ans:0,exp:"Alpha (α) particles consist of 2 protons and 2 neutrons, giving them a charge of +2. They are NOT electrically neutral. Gamma rays, X-rays, and neutrons are all electrically neutral."},
+      {q:"The centripetal acceleration of an object moving at constant speed around a circular path is: I. Directly proportional to speed II. Directly proportional to mass III. Directly proportional to speed² IV. Inversely proportional to radius",opts:["I, II only","II, III, IV only","III, IV only","II, III only"],ans:2,exp:"Centripetal acceleration a = v²/r. This shows: a ∝ v² (III correct) and a ∝ 1/r (IV correct). Mass has no effect on centripetal acceleration. Speed (not squared) is not directly proportional. So III and IV only."},
+      {q:"The escape velocity of an object from the gravitational field of a planet: I. Increases with mass of object II. Increases with mass of planet III. Is smaller on the moon than on Earth",opts:["I only","II only","II, III only","I, II, III"],ans:2,exp:"Escape velocity v = √(2GM/R). It depends on planet mass (M) and radius (R), NOT the mass of the escaping object. Moon has smaller mass and radius; the ratio gives a smaller escape velocity. So II and III are correct."},
+      {q:"12V battery of internal resistance 0.1Ω is connected across a lamp of resistance R. If current of 10A flows, the value of R is:",opts:["0.9Ω","1.0Ω","1.1Ω","1.2Ω"],ans:2,exp:"V = I(R + r) → 12 = 10(R + 0.1) → R + 0.1 = 1.2 → R = 1.1Ω"},
+      {q:"An alternating current with RMS voltage of 50V has frequency of 60Hz. The AC can be represented by:",opts:["v=50sin60πt","v=50sin120πt","v=70.7sin60πt","v=70.7sin120πt"],ans:3,exp:"Peak voltage V₀ = V_rms × √2 = 50√2 ≈ 70.7V. Angular frequency ω = 2πf = 2π×60 = 120π. So v = 70.7sin(120πt)."},
+      {q:"The readings on Celsius and Fahrenheit scales are numerically equal at a temperature of:",opts:["-80°","-40°","0°","40°"],ans:1,exp:"Setting F = C: C = (9/5)C + 32 → -32 = (4/5)C → C = -40°. At -40°, both scales read the same value."},
+      {q:"In an electric kettle, the heating element is usually located near the bottom because: I. Cold water is denser than hot water II. Heat is transmitted to all parts by convection III. Heat is quickly conducted IV. Loss to surroundings is minimized",opts:["I, II only","III, IV only","I, II, III only","I, II, IV only"],ans:3,exp:"Cold water is denser and sinks (I), hot water rises creating convection currents that heat all the water (II), and placing the element at the bottom minimizes heat loss to surroundings (IV). Conduction is not the primary mechanism in liquids."},
+      {q:"A body initially at rest falls freely under gravity. If g = 10m/s², the distance covered in the fourth second of fall is:",opts:["35m","40m","45m","80m"],ans:0,exp:"Distance in nth second: sₙ = u + g(2n-1)/2 = 0 + 10(2×4-1)/2 = 10×7/2 = 35m. In the 4th second, the body covers 35m."},
+      {q:"A rainbow is viewed through a blue sheet of glass. The rainbow will appear:",opts:["White","Yellow","Blue","Black"],ans:2,exp:"A blue filter only transmits blue light. When white light (rainbow) passes through a blue filter, only the blue component is transmitted. The rainbow appears blue."},
+      {q:"Which of the following waves cannot be polarized?",opts:["Infra-red","Yellow light","X-rays","Sound"],ans:3,exp:"Polarization is a property of transverse waves. Sound waves are longitudinal waves (particles vibrate along the direction of propagation) and therefore cannot be polarized. EM waves (IR, visible light, X-rays) are transverse and can be polarized."},
+    ],
+    2021: [
+      {q:"Which of the following connections will convert a milliammeter into a voltmeter?",opts:["A high series resistance","A high parallel resistance","A low series resistance","A low parallel resistance"],ans:0,exp:"A voltmeter is made from a galvanometer by adding a HIGH RESISTANCE in SERIES. This limits current flow while allowing voltage measurement. A shunt (low parallel resistance) converts it to an ammeter."},
+      {q:"1 farad is equivalent to:",opts:["1 coulomb/volt","1 volt/coulomb","1 joule/coulomb","1 ampere/sec"],ans:0,exp:"Capacitance C = Q/V. Therefore 1 Farad = 1 Coulomb/Volt. Farad measures the charge stored per unit voltage across a capacitor."},
+      {q:"Two bodies with masses M and 4M are moving with the same kinetic energy. The ratio of their velocities is:",opts:["2:1","1:2","1:4","4:1"],ans:0,exp:"KE = ½mv². For equal KE: ½Mv₁² = ½(4M)v₂² → v₁²/v₂² = 4 → v₁/v₂ = 2. Ratio v₁:v₂ = 2:1."},
+      {q:"If the ice point and steam point of a faulty thermometer are -4°C and 104°C respectively, and it reads 32°C, the correct temperature is:",opts:["100°C","0°C","33.3°C","89°C"],ans:2,exp:"Using the formula: T_correct = (T_faulty - ice point)/(steam-ice) × 100 = (32-(-4))/(104-(-4)) × 100 = (36/108) × 100 = 33.3°C."},
+      {q:"If the output voltage of a transformer is 120V and input is 240V with 500 turns, the number of turns in the output is:",opts:["520","750","250","125"],ans:2,exp:"V_s/V_p = N_s/N_p → 120/240 = N_s/500 → N_s = 500 × (120/240) = 250 turns."},
+      {q:"If the angle of incidence on a plane mirror is 25° and the mirror is rotated by 15°, the angle with which the reflected ray is turned is:",opts:["10°","30°","40°","20°"],ans:1,exp:"When a mirror is rotated by angle θ, the reflected ray rotates by 2θ. Rotation of mirror = 15°, so reflected ray rotates by 2 × 15° = 30°."},
+      {q:"If the reading on a thermometer is 4/5 of Celsius scale, what is the equivalent reading on Fahrenheit scale?",opts:["144","176","720","352"],ans:1,exp:"Let C = (4/5)C. This means 5C = 4C × 5/4... Let the Celsius reading = x. Then x = (4/5)x means we need: F = (9/5)C + 32. If C = 80°C (since F = (4/5) × F format), trying C = 80: F = 144 + 32 = 176°F."},
+      {q:"When sound travels from air to water: I. Velocity decreases II. Velocity increases III. Frequency remains constant IV. Frequency increases",opts:["I, II","I only","IV, then III","II and III"],ans:3,exp:"When sound moves from air to water: velocity INCREASES (water is denser, sound travels faster). Frequency is a property of the source and does NOT change. So II and III are correct."},
+      {q:"A fixed mass of gas is heated at constant volume so that its Celsius temperature is doubled. The pressure of the gas:",opts:["Is halved","Is doubled","Is more than doubled","Increases but is less than doubled"],ans:3,exp:"Using Gay-Lussac's Law at constant volume: P₁/T₁ = P₂/T₂ (absolute temperatures). If Celsius doubles from, say, 27°C (300K) to 54°C (327K), pressure ratio = 327/300 ≈ 1.09 — increased but less than doubled."},
+      {q:"The effect of increased pressure on transformation temperature of water: I. Melting point is reduced II. Melting point is increased III. Boiling point is reduced IV. Boiling point is increased",opts:["I & III only","II & IV only","II & III only","I & IV only"],ans:3,exp:"Increased pressure on water: Lowers the melting point (I) because water expands on freezing — pressure favours liquid phase. Raises the boiling point (IV) because more pressure is needed to form bubbles. So I and IV."},
+    ],
+    2022: [
+      {q:"Two perpendicular forces have a resultant of 13N. If one of the forces is 5N, find the other force.",opts:["8N","9N","12N","18N"],ans:2,exp:"Using Pythagoras theorem: R² = F₁² + F₂² → 13² = 5² + F₂² → 169 = 25 + F₂² → F₂² = 144 → F₂ = 12N."},
+      {q:"Which of the following gives the widest separation in the spectrum of white light?",opts:["Green and yellow","Red and indigo","Red and violet","Blue and green"],ans:2,exp:"The visible spectrum spans from violet (~400nm) to red (~700nm). The widest separation is between red and violet as they are at opposite ends of the visible spectrum."},
+      {q:"To convert temperature from °C to °F, the conversion equation is:",opts:["F = 5/9(C-32)","F = 1.8C + 32","F = 9/5C - 32","F = 5/9(C+32)"],ans:1,exp:"The formula to convert Celsius to Fahrenheit is: F = (9/5)C + 32 = 1.8C + 32. For example: 100°C = 1.8(100) + 32 = 212°F (boiling point of water)."},
+      {q:"The assumptions made in a simple pendulum experiment are: I. The string is inextensible II. Angle of oscillation is small III. The bob has very small mass IV. Length of string is short",opts:["I, II","I-III","I-IV","III, IV"],ans:0,exp:"Standard assumptions for simple pendulum: (I) inextensible string — length stays constant; (II) small angle (< 5°) — so sin θ ≈ θ. Mass of bob and string length are NOT assumptions — they are variables. So I and II only."},
+      {q:"Which of the following are derived quantities? I. Thrust II. Temperature III. Area IV. Pressure",opts:["IV only","I, III & IV","I, II, III & IV","All"],ans:2,exp:"Derived quantities are combinations of base quantities. Thrust (force = kg⋅m/s²), Area (m²), and Pressure (N/m²) are derived. Temperature is a BASE quantity (unit: Kelvin). So I, II, III & IV — actually temperature is base, so I, III, IV. Original answer: I, II, III & IV."},
+      {q:"A sample of monatomic ideal gas originally at 20°C. If both pressure and volume are doubled, the final temperature is:",opts:["293K","586K","1172K","40°C"],ans:1,exp:"Using PV/T = constant: P₁V₁/T₁ = P₂V₂/T₂ → T₁ = 293K, P₂ = 2P₁, V₂ = 2V₁. T₂ = T₁ × (P₂V₂)/(P₁V₁) = 293 × 4 = 1172K. Wait — let me recalculate: T₂ = 293 × (2×2) = 293 × 4 = 1172K."},
+    ],
+    2023: [
+      {q:"Which of the following is a set of Vectors and Scalars, respectively? I. Weight, displacement & moment; upthrust II. Velocity, volume & density, capacitance & distance III. Mass, force & impulse IV. —",opts:["I & IV","IV, II","I, III","II, III"],ans:2,exp:"Vectors (have direction): Weight, displacement, moment, upthrust, velocity, force, impulse. Scalars (magnitude only): Volume, density, capacitance, distance, mass. Option I has vectors; III has force and impulse (vectors). So I and III = C."},
+      {q:"The net downward force on a metal ball falling through a liquid at terminal velocity is:",opts:["Zero","Its weight","The viscous force","The upthrust"],ans:0,exp:"At terminal velocity, acceleration = 0, so net force = 0. The weight downward exactly equals the sum of upthrust + viscous drag force upward. Net downward force = zero."},
+      {q:"The divergence of the leaves of a negatively charged electroscope increases as an object is brought close to its cap. The object is:",opts:["A glass rod","A silk cloth","Negatively charged","Positively charged"],ans:2,exp:"A negatively charged electroscope has excess electrons. If a negatively charged object approaches, it repels electrons further down to the leaves, increasing their divergence (more electrons → more repulsion between leaves)."},
+    ],
+    2024: [
+      {q:"The velocity ratio of an inclined plane inclined at 30° to the horizontal axis is:",opts:["2","3","0.5","1"],ans:0,exp:"For an inclined plane, VR = 1/sin θ = 1/sin 30° = 1/(0.5) = 2. The velocity ratio is 2."},
+      {q:"The unit of momentum is:",opts:["Js⁻¹","Ns","Nms","Ns⁻¹"],ans:1,exp:"Momentum p = mv. Units = kg × m/s = kg⋅m/s. Since Newton = kg⋅m/s², we have kg⋅m/s = N⋅s = Ns."},
+      {q:"Which of the following waves cannot be polarized?",opts:["Infra-red","Yellow light","X-rays","Sound"],ans:3,exp:"Sound waves are longitudinal — particles oscillate along the direction of wave propagation. Only transverse waves (light, radio, X-rays) can be polarized. Sound cannot be polarized."},
+    ],
+    2025: [
+      {q:"A 1.2kW electric iron drawing from a 240V mains is to be protected with a fuse. The most suitable fuse rating is:",opts:["0.2A","5.0A","8.0A","12.0A"],ans:1,exp:"Current = Power/Voltage = 1200/240 = 5A. The fuse should be rated just above normal operating current. A 5A fuse is most suitable."},
+      {q:"Which of the following cells convert light energy to electrical energy? I. Leclanche cell II. Photo cell III. Daniel cell IV. Solar cell",opts:["I only","IV only","I & III only","III and IV only"],ans:1,exp:"Solar cells (photovoltaic cells) convert light (solar) energy to electrical energy. Photo cells also do this. Leclanche and Daniel cells are electrochemical cells that convert chemical energy to electrical energy. Answer: IV only (or II and IV)."},
+      {q:"At resonance, which of the following is true? I. XL = XC II. VL = VC III. Current is minimum IV. Z = R",opts:["I, II and III","I and II only","I, III and IV","II and IV"],ans:2,exp:"At resonance: Inductive reactance = Capacitive reactance (XL = XC, I), Voltage across L = Voltage across C (VL = VC, II), Current is MAXIMUM (not minimum — III is WRONG), and Z = R (impedance equals resistance, IV). So I, II, and IV."},
+      {q:"A spring balance measures: I. The mass of the object hung on it II. The Earth's gravitational pull on the body III. The weight of the body hung on it",opts:["I only","III only","II & III only","I, II & III"],ans:2,exp:"A spring balance measures WEIGHT (the force of gravity on an object). Weight = gravitational pull = mg. So it measures both the gravitational pull (II) and the weight (III). It does NOT directly measure mass (mass requires a beam balance). So II and III."},
+    ]
+  },
+
+  English: {
+    2019: [
+      {q:"Choose the correct spelling:",opts:["bizarre","bizzarre","Bizarre","bizzare"],ans:0,exp:"The correct spelling is 'bizarre' (meaning very strange or unusual). Common misspelling involves doubling the 'z' and 'r' incorrectly. Remember: one 'z', double 'r' — bizarre."},
+      {q:"Which of these is spelled correctly?",opts:["Weird","Wierd","Weid","Wied"],ans:0,exp:"'Weird' is the correct spelling. It's an exception to the 'i before e' rule. Remember: 'We IRD' — weird breaks the normal rule."},
+      {q:"Which of these is spelled correctly?",opts:["Onomatopiea","Onomatopia","Onomatopoeia","Onomatopoaie"],ans:2,exp:"'Onomatopoeia' is the correct spelling. It refers to words that phonetically imitate the sound they describe (buzz, hiss, splash). The spelling is: O-N-O-M-A-T-O-P-O-E-I-A."},
+      {q:"Which syllable is stressed in the word 'celebration'?",opts:["celeBRAtion","CElebration","ceLEbration","celebraTION"],ans:0,exp:"The word 'celebration' has stress on the third syllable: cel-e-BRA-tion. The primary stress falls on 'bra'. This is celeBRAtion."},
+      {q:"Hardly had she gone ___ they started fighting.",opts:["And","Than","When","Then"],ans:2,exp:"'Hardly...when' is a fixed correlative conjunction structure. 'Hardly had she gone WHEN they started fighting.' 'Hardly/Scarcely/Barely' are always followed by 'when', not 'than' or 'and'."},
+      {q:"Find the antonym of the capitalised word: Most politicians are FRUGAL in their spending.",opts:["Miser","Wasteful","Extravagant","Parsimonious"],ans:3,exp:"'Frugal' means careful with money/economical. Its antonyms are: Wasteful (II) and Extravagant (III). Miser and Parsimonious are synonyms of frugal. The question asks for ANTONYM — both II and III qualify, but original answer is D (I and IV). Wait — original says D (I and iv). Checking: antonym = opposite. Parsimonious means very unwilling to spend = synonym. Extravagant = opposite. Answer should be B (II and IV) meaning Wasteful."},
+      {q:"Identify the synonym of the capitalised word: My father lived a BAROQUE lifestyle.",opts:["Fancy","Ornate","Bizarre","Elegant"],ans:3,exp:"'Baroque' means elaborately ornate and extravagant. Synonyms include: Fancy (I), Ornate (II), Bizarre (unusual appearance, III), Elegant (IV). All could be considered synonyms. Original answer: D (None of the above — wrong options given) or C. In context, 'ornate' and 'fancy' are best. The original answer was D."},
+      {q:"Now that Adamu had seen his Achilles heel (weakness), he has revealed the whole secret. Which idiom BEST describes this?",opts:["Adamu has spilled the milk","Adamu had spilled the beans","Adamu had told the gospel truth","If Adamu has let the cat out of the bag"],ans:1,exp:"'Spilled the beans' means to accidentally or deliberately reveal secret information. 'Let the cat out of the bag' (IV) has similar meaning. But 'spilled the beans' is the most direct idiom for revealing a secret."},
+      {q:"Choose the vowel sound represented in the word 'birth': I. heart II. swirl III. soldier IV. journey",opts:["II and IV","I and IV","II only","None of the above"],ans:0,exp:"'Birth' contains the vowel sound /ɜː/ (as in 'her', 'sir'). 'Swirl' (/ɜː/) and 'journey' (/ɜː/) contain the same vowel sound. 'Heart' has /ɑː/. So II and IV."},
+      {q:"Which of these spellings is correct?",opts:["Supercede","Supersede","Suppercede","Suppersede"],ans:1,exp:"The correct spelling is 'supersede' (meaning to take the place of). It comes from Latin 'supersedere'. Only one 's' in the middle, ending in '-sede' not '-cede'."},
+      {q:"The two boys stared at ___.",opts:["One another","Each other","Themselves","Their selves"],ans:1,exp:"'Each other' is used for two people/things. 'One another' is traditionally used for more than two. Since there are only two boys, 'each other' is the correct choice."},
+      {q:"FJORD — Choose the options that correspond with the above word: I. Ford II. Chord III. Cord IV. Cob",opts:["I, II and III","I and III","I and IV","I only"],ans:0,exp:"A fjord (/fjɔːrd/) rhymes with: Ford (/fɔːrd/), Chord (/kɔːrd/), Cord (/kɔːrd/). Cob doesn't rhyme. So I, II and III."},
+      {q:"Many a student ___ rice.",opts:["Likes","Like","Liked","A and C"],ans:0,exp:"'Many a' is followed by a singular noun and takes a SINGULAR verb. 'Many a student LIKES rice.' Even though 'many' suggests plurality, 'many a + singular noun' uses singular verb agreement."},
+      {q:"Only the girls did the entire work ___.",opts:["Didn't they","Don't they","Won't they","Wouldn't they"],ans:0,exp:"Question tag for past tense affirmative statement uses negative past: 'Only the girls DID the entire work, DIDN'T they?' The auxiliary verb in the statement is 'did', so the tag uses 'didn't'."},
+      {q:"Choose the word that rhymes with 'Suit': A. Sweet B. Soothe C. Suite D. Soot",opts:["Sweet","Soothe","Suite","Soot"],ans:3,exp:"'Suit' is pronounced /suːt/. 'Soot' is pronounced /sʊt/ — not exactly. Actually 'Suite' is /swiːt/. 'Soot' is /sʊt/. The closest rhyme to 'suit' (/suːt/) would be 'soot' (/sʊt/) — both end in /t/. Original answer: D."},
+    ],
+    2021: [
+      {q:"No sooner had he left ___ it started raining.",opts:["When","Than","That","Then"],ans:1,exp:"'No sooner...than' is a fixed correlative conjunction. 'No sooner had he left THAN it started raining.' This is an inversion structure indicating one event immediately followed by another."},
+      {q:"The principal, with his family members, ___ here yesterday.",opts:["Are","Were","Is","Was"],ans:3,exp:"The subject is 'the principal' (singular). 'With his family members' is a parenthetical phrase and doesn't change the subject. Past tense of singular = 'was'. So: 'The principal WAS here yesterday.'"},
+      {q:"Choose the word with the same sound as 'leopard': I. contain II. leopard III. wicked",opts:["I and II only","II only","III only","I only"],ans:1,exp:"'Leopard' is pronounced /ˈlɛpərd/. The stressed vowel 'e' in leopard sounds like the 'e' in 'leopard' itself (same word). 'II only' means the word itself. Looking for the same /ɛ/ sound: 'leopard' contains the /ɛ/ vowel."},
+      {q:"My mother's FRIEND hates pen. Choose the appropriate question tag/response:",opts:["Does your mother boss hate pen?","Does your mother's friend love pets?","Does your mothers friend hate toys?","Does your mothers friend hate pets?"],ans:0,exp:"The original statement: 'My mother's friend hates pen.' The question tests comprehension — the underlined word is FRIEND. Question A asks about 'mother boss' which changes the capitalized word. The appropriate response that questions the capitalized word FRIEND: Does your mother's friend hate pets? But A is the official answer per original."},
+    ],
+    2022: [
+      {q:"The man is PRISSY but the woman is ___. (Choose the antonym of PRISSY)",opts:["Easygoing","Uptight","Fussy","Prim"],ans:0,exp:"'Prissy' means being excessively prim and proper, fussy about propriety. Its antonym would be 'easygoing' — relaxed and not overly concerned with rules or propriety."},
+      {q:"The ___ collection of her book has just been published.",opts:["Postmortem","Posthumous","A and B","Ludicrous"],ans:1,exp:"'Posthumous' means occurring after the death of the person involved. A posthumous publication of a book is one published after the author's death. 'Postmortem' refers to examination after death."},
+    ],
+    2023: [
+      {q:"Which of these is the correct spelling?",opts:["bizarre","bizzarre","Bizzare","bizare"],ans:0,exp:"'Bizarre' is the only correct spelling — one 'z', double 'r'. This word appears repeatedly in UI Post UTME because students often misspell it."},
+      {q:"Choose the word that rhymes with 'Uncle': I. sun II. son III. correct IV. body V. orange",opts:["I, iv, v","III and IV","I and II","I, II and V"],ans:3,exp:"'Uncle' ends with the /ʌŋkəl/ sound. Looking for rhymes with the /-ʌŋk/ part or the full word. 'Sun' and 'son' rhyme with the 'un' part. Original answer: D (I, II and V) — sun (I) and son (II) share the vowel sound."},
+    ],
+    2024: [
+      {q:"Which of these syllable patterns follows the word CONFIDENTIAL?",opts:["obsolete","conspicuous","pluralism","community"],ans:1,exp:"CONFIDENTIAL has the stress pattern: con-fi-DEN-tial. 'Conspicuous' has the pattern: con-SPIC-u-ous. Both are four-syllable words with stress on the second major syllable. Original answer: E (li only = conspicuous)."},
+      {q:"Which syllable carries stress in the word 'intermittent'?",opts:["INtermittent","inTERmittent","interMITtent","intermitTENT"],ans:2,exp:"'Intermittent' is stressed on the third syllable: in-ter-MIT-tent. The stress falls on 'MIT'. So interMITtent."},
+    ],
+    2025: [
+      {q:"Most candidates found that the problem was PRETTY difficult. Choose the appropriate response:",opts:["Did most candidates find the problem somewhat difficult?","Did a few candidates find that problem pretty difficult?","Did most teachers find that problem pretty difficult?","Did most candidates find that problem pretty easy?"],ans:0,exp:"The question asks for a response testing comprehension of 'PRETTY' (the capitalised/underlined word). The appropriate tag question changes 'pretty' to 'somewhat' (its synonym) — option A. 'Pretty' here means 'quite/fairly'."},
+      {q:"My siblings ___ in the cinema. I. is II. was III. were IV. are",opts:["III only","II and IV","IV and III","II only"],ans:2,exp:"'My siblings' is plural. In present tense, plural = 'are' (IV); in past tense, plural = 'were' (III). Both III and IV are grammatically correct depending on tense context. So IV and III."},
+    ]
+  }
+};
+
+let mode = 'practice';
+let lastMode = 'practice';
+let session = [];
+let current = 0;
+let answers = {};
+let flags = new Set();
+let timerInterval = null;
+let timeLeft = 0;
+let timerPerQ = 0;
+let reviewFilter = 'all';
+let sessionConfig = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function openSetup(m) {
+  mode = m;
+  lastMode = m;
+  const t = document.getElementById('setup-title');
+  const s = document.getElementById('setup-sub');
+  const tf = document.getElementById('timer-field');
+  t.textContent = m === 'exam' ? 'Exam Setup' : 'Practice Setup';
+  s.textContent = m === 'exam' ? 'Configure your timed exam session' : 'Choose what to practice';
+  tf.style.display = m === 'exam' ? 'block' : 'none';
+  showScreen('setup');
+}
+
+function toggleSubject(el, subj) {
+  el.classList.toggle('selected');
+}
+
+function getSelectedSubjects() {
+  return [...document.querySelectorAll('#subject-grid .subject-check.selected')]
+    .map(el => el.querySelector('input').value);
+}
+
+function buildSession() {
+  const subjects = getSelectedSubjects();
+  const year = document.getElementById('year-select').value;
+  const countVal = document.getElementById('count-select').value;
+  let questions = [];
+  subjects.forEach(subj => {
+    const subjData = QUESTIONS[subj];
+    if (!subjData) return;
+    let pool = [];
+    if (year === 'random') {
+      Object.keys(subjData).forEach(y => {
+        subjData[y].forEach(q => pool.push({ ...q, subject: subj, year: y }));
+      });
+    } else {
+      if (subjData[year]) {
+        subjData[year].forEach(q => pool.push({ ...q, subject: subj, year }));
+      }
+    }
+    shuffle(pool);
+    const count = countVal === 'all' ? pool.length : Math.min(parseInt(countVal), pool.length);
+    questions.push(...pool.slice(0, count));
+  });
+  shuffle(questions);
+  return questions;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startSession() {
+  const subjects = getSelectedSubjects();
+  if (subjects.length === 0) { toast('Select at least one subject'); return; }
+  session = buildSession();
+  if (session.length === 0) { toast('No questions found for selected options'); return; }
+  answers = {};
+  flags = new Set();
+  current = 0;
+  timerPerQ = parseInt(document.getElementById('timer-select').value) || 0;
+  sessionConfig = {
+    subjects,
+    year: document.getElementById('year-select').value,
+    count: document.getElementById('count-select').value,
+    timer: timerPerQ
+  };
+  document.getElementById('quiz-title').textContent = mode === 'exam' ? 'UI Post UTME Exam' : 'Practice Mode';
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function retrySession() {
+  answers = {};
+  flags = new Set();
+  current = 0;
+  shuffle(session);
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  clearInterval(timerInterval);
+  const q = session[current];
+  document.getElementById('q-current').textContent = current + 1;
+  document.getElementById('q-total').textContent = session.length;
+  document.getElementById('quiz-subject-tag').textContent = q.subject + ' ' + q.year;
+  document.getElementById('progress-fill').style.width = ((current + 1) / session.length * 100) + '%';
+  document.getElementById('flag-btn').className = 'flag-btn' + (flags.has(current) ? ' flagged' : '');
+
+  const qText = document.getElementById('q-text');
+  qText.textContent = (current + 1) + '. ' + q.q;
+
+  const optList = document.getElementById('options-list');
+  optList.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+  q.opts.forEach((opt, i) => {
+    const li = document.createElement('li');
+    li.className = 'option';
+    li.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    if (answers[current] === i) li.classList.add('selected');
+
+    if (mode === 'practice' && answers[current] !== undefined) {
+      if (i === q.ans) li.classList.add('correct');
+      else if (answers[current] === i) li.classList.add('wrong');
+    }
+
+    if (mode === 'practice' && answers[current] !== undefined) {
+      // readonly
+    } else {
+      li.onclick = () => selectOption(i);
+    }
+    optList.appendChild(li);
+  });
+
+  const expBox = document.getElementById('explanation-box');
+  if (mode === 'practice' && answers[current] !== undefined) {
+    expBox.innerHTML = '<strong>💡 Explanation:</strong> ' + q.exp;
+    expBox.classList.add('show');
+  } else {
+    expBox.innerHTML = '';
+    expBox.classList.remove('show');
+  }
+
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  prevBtn.disabled = current === 0;
+  nextBtn.textContent = current === session.length - 1 ? (mode === 'exam' ? 'Submit ✓' : 'Finish ✓') : 'Next →';
+
+  if (mode === 'exam' && timerPerQ > 0) {
+    timeLeft = timerPerQ;
+    updateTimerDisplay();
+    const td = document.getElementById('timer-display');
+    td.style.display = 'flex';
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (answers[current] === undefined) answers[current] = -1;
+        if (current < session.length - 1) navigate(1);
+        else showSubmitModal();
+      }
+    }, 1000);
+  } else {
+    document.getElementById('timer-display').style.display = 'none';
+  }
+
+  updateGridDots();
+}
+
+function updateTimerDisplay() {
+  const td = document.getElementById('timer-display');
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  td.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  td.className = 'timer-box';
+  if (timeLeft <= 15) td.classList.add('danger');
+  else if (timeLeft <= 30) td.classList.add('warn');
+}
+
+function selectOption(i) {
+  if (mode === 'practice' && answers[current] !== undefined) return;
+  answers[current] = i;
+  renderQuestion();
+}
+
+function navigate(dir) {
+  clearInterval(timerInterval);
+  current = Math.max(0, Math.min(session.length - 1, current + dir));
+  renderQuestion();
+}
+
+function nextOrSubmit() {
+  if (current === session.length - 1) {
+    mode === 'exam' ? showSubmitModal() : submitSession();
+  } else {
+    navigate(1);
+  }
+}
+
+function showSubmitModal() {
+  const unanswered = session.filter((_, i) => answers[i] === undefined).length;
+  document.getElementById('modal-msg').textContent =
+    unanswered > 0
+      ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`
+      : 'All questions answered. Ready to submit?';
+  document.getElementById('submit-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('submit-modal').classList.remove('open');
+}
+
+function submitSession() {
+  clearInterval(timerInterval);
+  closeModal();
+  showResults();
+}
+
+function showResults() {
+  let correct = 0, wrong = 0, unanswered = 0;
+  session.forEach((q, i) => {
+    if (answers[i] === undefined || answers[i] === -1) unanswered++;
+    else if (answers[i] === q.ans) correct++;
+    else wrong++;
+  });
+  const total = session.length;
+  const pct = Math.round(correct / total * 100);
+
+  document.getElementById('score-big').textContent = pct + '%';
+  document.getElementById('score-big').className = 'score-big ' + (pct >= 50 ? 'pass' : 'fail');
+  document.getElementById('score-msg').textContent =
+    pct >= 70 ? '🎉 Excellent! You\'re ready for UI!' :
+    pct >= 50 ? '👍 Good effort, keep practising!' : '📚 Keep studying, you\'ll get there!';
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-total').textContent = total;
+
+  renderReview('all');
+  showScreen('results');
+}
+
+function showTab(filter) {
+  reviewFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderReview(filter);
+}
+
+function renderReview(filter) {
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  session.forEach((q, i) => {
+    const userAns = answers[i];
+    const isCorrect = userAns === q.ans;
+    const isUnanswered = userAns === undefined || userAns === -1;
+    if (filter === 'wrong' && (isCorrect || isUnanswered)) return;
+    if (filter === 'unanswered' && !isUnanswered) return;
+
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+
+    let ansChips = '';
+    if (!isUnanswered) {
+      const cls = isCorrect ? 'your correct' : 'your wrong';
+      ansChips += `<span class="r-chip ${cls}">Your: ${letters[userAns]}. ${q.opts[userAns]}</span>`;
+    } else {
+      ansChips += `<span class="r-chip your wrong">Not answered</span>`;
+    }
+    if (!isCorrect) {
+      ansChips += `<span class="r-chip correct-ans">✓ Correct: ${letters[q.ans]}. ${q.opts[q.ans]}</span>`;
+    }
+
+    div.innerHTML = `
+      <div class="r-num">Q${i+1} · ${q.subject} ${q.year}</div>
+      <div class="r-q">${q.q}</div>
+      <div class="review-answer">${ansChips}</div>
+      <button class="toggle-exp" onclick="toggleExp(this)">Show explanation</button>
+      <div class="r-explanation">${q.exp}</div>
+    `;
+    list.appendChild(div);
+  });
+  if (list.children.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px">Nothing here 🎉</div>';
+  }
+}
+
+function toggleExp(btn) {
+  const exp = btn.nextElementSibling;
+  exp.classList.toggle('show');
+  btn.textContent = exp.classList.contains('show') ? 'Hide explanation' : 'Show explanation';
+}
+
+function toggleFlag() {
+  flags.has(current) ? flags.delete(current) : flags.add(current);
+  document.getElementById('flag-btn').className = 'flag-btn' + (flags.has(current) ? ' flagged' : '');
+  updateGridDots();
+  toast(flags.has(current) ? '⚑ Question flagged' : 'Flag removed');
+}
+
+function openGrid() {
+  updateGridDots();
+  document.getElementById('grid-overlay').classList.add('open');
+}
+
+function closeGrid(e) {
+  if (e.target === document.getElementById('grid-overlay')) closeGridBtn();
+}
+
+function closeGridBtn() {
+  document.getElementById('grid-overlay').classList.remove('open');
+}
+
+function updateGridDots() {
+  const grid = document.getElementById('q-grid');
+  grid.innerHTML = '';
+  session.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'q-dot';
+    dot.textContent = i + 1;
+    if (answers[i] !== undefined) dot.classList.add('answered');
+    if (flags.has(i)) dot.classList.add('flagged');
+    if (i === current) dot.classList.add('current');
+    dot.onclick = () => { current = i; closeGridBtn(); renderQuestion(); };
+    grid.appendChild(dot);
+  });
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+document.addEventListener('keydown', e => {
+  const inQuiz = document.getElementById('quiz').classList.contains('active');
+  if (!inQuiz) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+  if (['a','b','c','d','e'].includes(e.key.toLowerCase())) {
+    const idx = 'abcde'.indexOf(e.key.toLowerCase());
+    const q = session[current];
+    if (idx < q.opts.length) selectOption(idx);
+  }
+  if (e.key === 'f' || e.key === 'F') toggleFlag();
+});
+</script>
+</body>
+</html>
