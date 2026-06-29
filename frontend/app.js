@@ -1,6 +1,7 @@
 const STORAGE_PROFILE = 'uiprep_profile';
 const STORAGE_HISTORY = 'uiprep_history';
 
+
 let mode = 'exam';
 let allQuestions = {};
 let currentSubjectIndex = 0;
@@ -15,6 +16,13 @@ let reviewTab = 'wrong';
 let gridSheetSubject = 0;
 let aiEnabled = false;
 
+// ── Calculator state ──────────────────────────────────────────
+const CALC_SUBJECTS = new Set(['Physics', 'Chemistry']);
+let calcValue = '0';
+let calcOperand = null;
+let calcOperator = null;
+let calcJustEvaled = false;
+
 function getProfile() {
   try { return JSON.parse(localStorage.getItem(STORAGE_PROFILE) || 'null'); } catch { return null; }
 }
@@ -24,14 +32,44 @@ function setProfile(p) {
 }
 
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_HISTORY) || '[]'); } catch { return []; }
+  try {
+    const raw = localStorage.getItem(STORAGE_HISTORY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
+function escHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function tryStoreHistory(data) {
+  try {
+    localStorage.setItem(STORAGE_HISTORY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    if (e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22)) return false;
+    return false;
+  }
 }
 
 function saveSession(session) {
-  const hist = getHistory();
+  let hist = getHistory();
   hist.unshift(session);
   if (hist.length > 50) hist.splice(50);
-  localStorage.setItem(STORAGE_HISTORY, JSON.stringify(hist));
+
+  if (!tryStoreHistory(hist)) {
+    const slimmed = hist.map((s, i) => i === 0 ? s : Object.assign({}, s, { questionsSnapshot: [] }));
+    if (!tryStoreHistory(slimmed)) {
+      const minimal = hist.slice(0, 15).map((s, i) => i === 0 ? s : Object.assign({}, s, { questionsSnapshot: [] }));
+      if (!tryStoreHistory(minimal)) {
+        const bare = [hist[0]].map(s => Object.assign({}, s, { questionsSnapshot: [] }));
+        tryStoreHistory(bare);
+      }
+    }
+  }
 }
 
 function saveName() {
@@ -74,8 +112,11 @@ function renderHomeUser() {
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+  const screen = document.getElementById('screen-' + id);
+  screen.classList.add('active');
   window.scrollTo(0, 0);
+  const body = screen.querySelector('.screen-body');
+  if (body) body.scrollTop = 0;
   if (id === 'home') renderHomeUser();
   if (id === 'history') renderHistory();
 }
@@ -152,7 +193,7 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timeLeft--;
     updateTimerDisplay();
-    if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); }
+    if (timeLeft <= 0) { clearInterval(timerInterval); forceSubmitExam(); }
   }, 1000);
 }
 
@@ -168,8 +209,8 @@ function updateTimerDisplay() {
 function renderQuiz() {
   const timerEl = document.getElementById('quiz-timer');
   timerEl.classList.toggle('hidden', mode !== 'exam');
-  const submitBar = document.getElementById('submit-bar');
-  submitBar.classList.add('hidden');
+  document.getElementById('submit-bar').classList.add('hidden');
+  document.getElementById('practice-finish-bar').classList.toggle('hidden', mode !== 'practice');
 
   buildSubjectTabs();
   renderQuestion();
@@ -184,7 +225,7 @@ function buildSubjectTabs() {
     const tab = document.createElement('button');
     tab.className = 'stab' + (i === currentSubjectIndex ? ' active' : '');
     tab.innerHTML = `${subj} <span class="stab-count">${answered}/${total}</span>`;
-    tab.onclick = () => { currentSubjectIndex = i; currentQuestionIndex = 0; renderQuestion(); updateSubjectTabs(); };
+    tab.onclick = () => { currentSubjectIndex = i; currentQuestionIndex = 0; renderQuestion(); updateSubjectTabs(); checkShowSubmitBar(); };
     row.appendChild(tab);
   });
 }
@@ -198,6 +239,19 @@ function updateSubjectTabs() {
     const total = (allQuestions[subj] || []).length;
     tab.innerHTML = `${subj} <span class="stab-count">${answered}/${total}</span>`;
   });
+}
+
+function updateCalcButton() {
+  const subj = subjects[currentSubjectIndex];
+  const btn = document.getElementById('calc-toggle-btn');
+  if (CALC_SUBJECTS.has(subj)) {
+    btn.classList.remove('hidden');
+  } else {
+    btn.classList.add('hidden');
+    // Hide calculator if we switch away from a calc subject
+    document.getElementById('calculator').classList.add('hidden');
+    btn.classList.remove('active');
+  }
 }
 
 function renderQuestion() {
@@ -263,14 +317,14 @@ function renderQuestion() {
 
   checkShowSubmitBar();
   updateSubjectTabs();
+  updateCalcButton();
 }
 
 function checkShowSubmitBar() {
   if (mode !== 'exam' || examSubmitted) return;
-  const isLastQ = currentQuestionIndex === allQuestions[subjects[currentSubjectIndex]].length - 1;
   const isLastSubj = currentSubjectIndex === subjects.length - 1;
   const submitBar = document.getElementById('submit-bar');
-  if (isLastQ && isLastSubj) {
+  if (isLastSubj) {
     submitBar.classList.remove('hidden');
   } else {
     submitBar.classList.add('hidden');
@@ -375,16 +429,31 @@ function confirmQuit() {
     if (!confirm('Quit exam? Your progress will be lost.')) return;
   }
   clearInterval(timerInterval);
+  hideCalculator();
   showScreen('home');
+}
+
+function forceSubmitExam() {
+  clearInterval(timerInterval);
+  examSubmitted = true;
+  hideCalculator();
+  showResults();
 }
 
 function submitExam() {
   if (!confirm('Submit your exam? This cannot be undone.')) return;
   clearInterval(timerInterval);
   examSubmitted = true;
+  hideCalculator();
   showResults();
 }
 
+function finishPractice() {
+  hideCalculator();
+  showResults();
+}
+
+// ── Results modal ─────────────────────────────────────────────
 function showResults() {
   let total = 0, correct = 0;
   const subjectScores = {};
@@ -402,41 +471,92 @@ function showResults() {
   document.getElementById('result-pct').textContent = pct + '%';
   document.getElementById('result-fraction').textContent = `${correct} / ${total}`;
 
+  const color = pct >= 80 ? '#22c55e' : pct >= 65 ? '#fbbf24' : pct >= 50 ? '#f59e0b' : '#ef4444';
+  const glowColor = pct >= 80 ? 'rgba(34,197,94,0.28)' : pct >= 65 ? 'rgba(251,191,36,0.28)' : pct >= 50 ? 'rgba(245,158,11,0.28)' : 'rgba(239,68,68,0.22)';
+
   const grade = document.getElementById('result-grade');
-  if (pct >= 80) { grade.textContent = '🏆 Excellent!'; grade.className = 'result-grade grade-excellent'; }
-  else if (pct >= 65) { grade.textContent = '👍 Good Pass'; grade.className = 'result-grade grade-good'; }
-  else if (pct >= 50) { grade.textContent = '📚 Keep Studying'; grade.className = 'result-grade grade-average'; }
-  else { grade.textContent = '💪 Keep Practising'; grade.className = 'result-grade grade-poor'; }
+  const msg = document.getElementById('result-message');
+  if (pct >= 80) {
+    grade.textContent = '🏆 Excellent!';
+    grade.className = 'result-grade grade-excellent';
+    msg.textContent = 'Outstanding performance — you are well prepared!';
+  } else if (pct >= 65) {
+    grade.textContent = '👍 Good Pass';
+    grade.className = 'result-grade grade-good';
+    msg.textContent = 'Solid result — a little more work will get you to the top.';
+  } else if (pct >= 50) {
+    grade.textContent = '📚 Keep Studying';
+    grade.className = 'result-grade grade-average';
+    msg.textContent = 'You are on the right track — review weak areas below.';
+  } else {
+    grade.textContent = '💪 Keep Practising';
+    grade.className = 'result-grade grade-poor';
+    msg.textContent = 'Don\'t give up — use the review section to learn from mistakes.';
+  }
+
+  const modal = document.getElementById('results-modal');
+  modal.classList.remove('hidden');
+  const body = document.getElementById('results-modal-body');
+  body.scrollTop = 0;
+
+  document.getElementById('review-section').classList.add('hidden');
+  const arrow = document.getElementById('review-toggle-arrow');
+  if (arrow) arrow.classList.remove('open');
 
   setTimeout(() => {
-    const circumference = 326.7;
+    const circumference = 389.6;
     const offset = circumference - (pct / 100) * circumference;
-    document.getElementById('score-ring-fill').style.strokeDashoffset = offset;
-    const color = pct >= 80 ? '#22c55e' : pct >= 65 ? '#fbbf24' : pct >= 50 ? '#f59e0b' : '#ef4444';
-    document.getElementById('score-ring-fill').style.stroke = color;
-  }, 100);
+    const ring = document.getElementById('score-ring-fill');
+    ring.style.strokeDashoffset = offset;
+    ring.style.stroke = color;
+    const glow = document.getElementById('score-ring-glow');
+    if (glow) glow.style.boxShadow = `0 0 40px 18px ${glowColor}`;
+  }, 80);
 
   const breakdown = document.getElementById('subject-breakdown');
   breakdown.innerHTML = '';
+  const subjIcons = { Biology: '🧬', Chemistry: '⚗️', Physics: '⚡', English: '📖' };
   subjects.forEach(subj => {
     const { correct: sc, total: st } = subjectScores[subj];
     const sp = Math.round((sc / st) * 100);
+    const barColor = sp >= 65 ? '#22c55e' : sp >= 50 ? '#f59e0b' : '#ef4444';
+    const borderColor = barColor;
     const card = document.createElement('div');
     card.className = 'subj-result-card';
+    card.style.borderLeftColor = borderColor;
     card.innerHTML = `
       <div class="subj-result-top">
-        <span class="subj-result-name">${subj}</span>
-        <span class="subj-result-score">${sc}/${st} (${sp}%)</span>
+        <span class="subj-result-name">${subjIcons[subj] || ''} ${subj}</span>
+        <span class="subj-result-score" style="color:${barColor}">${sc}/${st} · ${sp}%</span>
       </div>
-      <div class="subj-bar-track"><div class="subj-bar-fill" style="width:0%;background:${sp>=65?'#22c55e':sp>=50?'#f59e0b':'#ef4444'}" data-w="${sp}"></div></div>`;
+      <div class="subj-bar-track"><div class="subj-bar-fill" style="width:0%;background:${barColor}" data-w="${sp}"></div></div>`;
     breakdown.appendChild(card);
   });
   setTimeout(() => {
     breakdown.querySelectorAll('.subj-bar-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
-  }, 200);
+  }, 180);
 
   const duration = mode === 'exam' ? 5400 - timeLeft : 0;
   const profile = getProfile();
+
+  const questionsSnapshot = [];
+  subjects.forEach(subj => {
+    const qList = allQuestions[subj] || [];
+    const answers = answersBySubject[subj] || {};
+    qList.forEach((q, i) => {
+      const given = answers[i];
+      questionsSnapshot.push({
+        subj: String(subj),
+        qNum: i + 1,
+        q: String(q.q || ''),
+        opts: Array.isArray(q.opts) ? q.opts.slice() : [],
+        given: (typeof given === 'number') ? given : null,
+        ans: typeof q.ans === 'number' ? q.ans : 0,
+        exp: typeof q.exp === 'string' ? q.exp : ''
+      });
+    });
+  });
+
   saveSession({
     id: Date.now(),
     date: new Date().toISOString(),
@@ -447,7 +567,8 @@ function showResults() {
     pct,
     duration,
     name: profile ? profile.name : '',
-    subjectScores
+    subjectScores,
+    questionsSnapshot
   });
 
   if (mode === 'exam') {
@@ -457,10 +578,33 @@ function showResults() {
   }
 
   reviewTab = 'wrong';
-  setReviewTab('wrong', document.querySelector('.rtab'));
-  showScreen('results');
 }
 
+function toggleReviewSection() {
+  const section = document.getElementById('review-section');
+  const arrow = document.getElementById('review-toggle-arrow');
+  const isHidden = section.classList.contains('hidden');
+  if (isHidden) {
+    section.classList.remove('hidden');
+    arrow.classList.add('open');
+    setReviewTab('wrong', document.querySelector('.rtab'));
+    setTimeout(() => {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  } else {
+    section.classList.add('hidden');
+    arrow.classList.remove('open');
+  }
+}
+
+function closeResults() {
+  document.getElementById('results-modal').classList.add('hidden');
+  // Reset ring for next session
+  document.getElementById('score-ring-fill').style.strokeDashoffset = '326.7';
+  showScreen('home');
+}
+
+// ── Review ────────────────────────────────────────────────────
 function setReviewTab(tab, el) {
   reviewTab = tab;
   document.querySelectorAll('.rtab').forEach(b => b.classList.remove('active'));
@@ -487,11 +631,13 @@ function renderReviewList() {
   const labels = ['A', 'B', 'C', 'D', 'E'];
   items.forEach(({ subj, q, i, given, status }) => {
     const el = document.createElement('div');
-    el.className = 'review-item';
+    const itemClass = { correct: 'is-correct', wrong: 'is-wrong', unanswered: 'is-skip' }[status];
+    el.className = `review-item ${itemClass}`;
     const badgeClass = { correct: 'badge-correct', wrong: 'badge-wrong', unanswered: 'badge-skip' }[status];
     const badgeText = { correct: '✓ Correct', wrong: '✗ Wrong', unanswered: '— Skipped' }[status];
     const givenText = given !== undefined ? `${labels[given]}. ${q.opts[given]}` : 'Not answered';
     const correctText = `${labels[q.ans]}. ${q.opts[q.ans]}`;
+    const givenClass = status === 'wrong' ? 'review-ans-val wrong-ans' : 'review-ans-val';
     const showAiBtn = mode === 'exam' ? examSubmitted : true;
     el.innerHTML = `
       <div class="review-item-header">
@@ -500,8 +646,8 @@ function renderReviewList() {
       </div>
       <div class="review-q">${q.q}</div>
       <div class="review-answers">
-        <div class="review-ans-line"><span class="review-ans-label">Your answer:</span><span class="review-ans-val">${givenText}</span></div>
-        <div class="review-ans-line"><span class="review-ans-label">Correct:</span><span class="review-ans-val correct-ans">${correctText}</span></div>
+        <div class="review-ans-line"><span class="review-ans-label">You:</span><span class="${givenClass}">${givenText}</span></div>
+        <div class="review-ans-line"><span class="review-ans-label">Answer:</span><span class="review-ans-val correct-ans">${correctText}</span></div>
       </div>
       ${q.exp ? `<div class="review-exp">${q.exp}</div>` : ''}
       ${showAiBtn ? `<button class="review-ai-btn" onclick="reviewAI(this,'${escapeStr(q.q)}','${escapeStr(q.opts[q.ans])}')"><span>✨</span> AI Explanation</button><div class="review-ai-result hidden"></div>` : ''}
@@ -558,35 +704,172 @@ function closeAIBox() {
   document.getElementById('ai-box').classList.add('hidden');
 }
 
+// ── History ────────────────────────────────────────────────────
+function lagosTime(isoDate) {
+  const d = new Date(isoDate);
+  const date = d.toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos', day: 'numeric', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit', hour12: true });
+  return { date, time };
+}
+
+function clearHistory() {
+  if (!confirm('Delete all session history? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_HISTORY);
+  renderHistory();
+  renderHomeUser();
+  toast('History cleared');
+}
+
 function renderHistory() {
   const list = document.getElementById('history-list');
   const history = getHistory();
   if (history.length === 0) {
-    list.innerHTML = '<div class="history-empty">No sessions yet. Start an exam or practice session!</div>';
+    list.innerHTML = `
+      <div class="hist-empty">
+        <div class="hist-empty-icon">📋</div>
+        <p>No sessions yet</p>
+        <small>Complete an exam or practice session to see it here</small>
+      </div>`;
     return;
   }
   list.innerHTML = '';
-  history.forEach(session => {
+  history.forEach((session, idx) => {
+    const { date, time } = lagosTime(session.date);
+    const color = session.pct >= 65 ? '#22c55e' : session.pct >= 50 ? '#f59e0b' : '#ef4444';
+    const modeLabel = session.mode === 'exam' ? 'Exam' : 'Practice';
+    const modeClass = session.mode === 'exam' ? 'hmode-exam' : 'hmode-practice';
+
+    const mins = session.duration ? Math.floor(session.duration / 60) : null;
+    const durationStr = mins ? `· ${mins} min used` : '';
+
     const card = document.createElement('div');
-    card.className = 'history-card';
-    const d = new Date(session.date);
-    const dateStr = d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
-    const timeStr = d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
-    const color = session.pct >= 65 ? 'var(--accent)' : session.pct >= 50 ? 'var(--warn)' : 'var(--danger)';
+    card.className = 'hist-card';
     card.innerHTML = `
-      <div class="history-card-top">
-        <span class="history-date">${dateStr} · ${timeStr}</span>
-        <span class="history-mode ${session.mode}">${session.mode === 'exam' ? 'Exam' : 'Practice'}</span>
+      <div class="hist-card-top">
+        <div class="hist-meta">
+          <span class="hist-datetime">📅 ${date} &nbsp;⏰ ${time} (Lagos)</span>
+          <span class="hist-badge ${modeClass}">${modeLabel}</span>
+        </div>
+        <div class="hist-score-row">
+          <span class="hist-pct" style="color:${color}">${session.pct}%</span>
+          <div class="hist-score-detail">
+            <span class="hist-fraction">${session.score} / ${session.total} correct</span>
+            <span class="hist-subjects">${session.subjects} ${durationStr}</span>
+          </div>
+        </div>
+        <div class="hist-subj-bars" id="hist-bars-${idx}"></div>
       </div>
-      <div class="history-score-row">
-        <span class="history-pct" style="color:${color}">${session.pct}%</span>
-        <span class="history-fraction">${session.score}/${session.total} correct</span>
-      </div>
-      <div class="history-subjects">${session.subjects}</div>`;
+      <button class="hist-view-btn" onclick="toggleHistoryAnswers(${idx}, this)">
+        <span>📝</span> View Questions &amp; Answers <span class="hist-view-arrow">›</span>
+      </button>
+      <div class="hist-answers hidden" id="hist-answers-${idx}"></div>
+    `;
     list.appendChild(card);
+
+    if (session.subjectScores) {
+      const barsEl = card.querySelector(`#hist-bars-${idx}`);
+      Object.entries(session.subjectScores).forEach(([subj, data]) => {
+        const sp = Math.round((data.correct / data.total) * 100);
+        const bc = sp >= 65 ? '#22c55e' : sp >= 50 ? '#f59e0b' : '#ef4444';
+        barsEl.innerHTML += `
+          <div class="hist-bar-row">
+            <span class="hist-bar-label">${subj}</span>
+            <div class="hist-bar-track"><div class="hist-bar-fill" style="width:${sp}%;background:${bc}"></div></div>
+            <span class="hist-bar-pct" style="color:${bc}">${sp}%</span>
+          </div>`;
+      });
+    }
   });
 }
 
+function toggleHistoryAnswers(idx, btn) {
+  const panel = document.getElementById(`hist-answers-${idx}`);
+  const arrow = btn.querySelector('.hist-view-arrow');
+  const isHidden = panel.classList.contains('hidden');
+
+  if (!isHidden) {
+    panel.classList.add('hidden');
+    btn.classList.remove('open');
+    arrow.style.transform = '';
+    return;
+  }
+
+  const history = getHistory();
+  const session = history[idx];
+  panel.classList.remove('hidden');
+  btn.classList.add('open');
+  arrow.style.transform = 'rotate(90deg)';
+
+  if (panel.dataset.rendered) return;
+  panel.dataset.rendered = '1';
+
+  if (!session) {
+    panel.innerHTML = '<div class="hist-no-snap">Session data not found — it may have been cleared.</div>';
+    return;
+  }
+
+  const snap = Array.isArray(session.questionsSnapshot) ? session.questionsSnapshot : [];
+  if (snap.length === 0) {
+    panel.innerHTML = '<div class="hist-no-snap">Question details are not available for this session.</div>';
+    return;
+  }
+
+  const labels = ['A', 'B', 'C', 'D', 'E'];
+  const STATUSES = { correct: 'hq-correct', wrong: 'hq-wrong', skip: 'hq-skip' };
+  const STATUS_LABELS = { correct: '✓ Correct', wrong: '✗ Wrong', skip: '— Skipped' };
+
+  let html = '';
+  let lastSubj = '';
+
+  snap.forEach(item => {
+    if (!item || typeof item !== 'object') return;
+
+    const opts = Array.isArray(item.opts) ? item.opts : [];
+    const ans = typeof item.ans === 'number' ? item.ans : 0;
+    const given = typeof item.given === 'number' ? item.given : null;
+
+    const subjName = escHtml(String(item.subj || ''));
+    if (subjName !== lastSubj) {
+      html += `<div class="hist-subj-header">${subjName}</div>`;
+      lastSubj = subjName;
+    }
+
+    const status = given === null ? 'skip' : given === ans ? 'correct' : 'wrong';
+    const borderClass = STATUSES[status];
+
+    const givenLabel = (given !== null && given >= 0 && given < opts.length)
+      ? `${labels[given] || '?'}. ${escHtml(String(opts[given]))}`
+      : 'Not answered';
+
+    const correctLabel = (ans >= 0 && ans < opts.length)
+      ? `${labels[ans] || '?'}. ${escHtml(String(opts[ans]))}`
+      : 'Unknown';
+
+    html += `
+      <div class="hq-item ${borderClass}">
+        <div class="hq-header">
+          <span class="hq-num">Q${item.qNum || '—'}</span>
+          <span class="hq-badge hq-bdg-${status}">${STATUS_LABELS[status]}</span>
+        </div>
+        <div class="hq-text">${escHtml(String(item.q || ''))}</div>
+        <div class="hq-answers">
+          <div class="hq-ans-line">
+            <span class="hq-ans-lbl">You:</span>
+            <span class="hq-ans-val ${status === 'wrong' ? 'hq-wrong-val' : ''}">${givenLabel}</span>
+          </div>
+          <div class="hq-ans-line">
+            <span class="hq-ans-lbl">Answer:</span>
+            <span class="hq-ans-val hq-correct-val">${correctLabel}</span>
+          </div>
+        </div>
+        ${item.exp ? `<div class="hq-exp">${escHtml(String(item.exp))}</div>` : ''}
+      </div>`;
+  });
+
+  panel.innerHTML = html || '<div class="hist-no-snap">No question data to display.</div>';
+}
+
+// ── Toast ─────────────────────────────────────────────────────
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -594,6 +877,99 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ── Calculator ────────────────────────────────────────────────
+function toggleCalculator() {
+  const calc = document.getElementById('calculator');
+  const btn = document.getElementById('calc-toggle-btn');
+  const isHidden = calc.classList.contains('hidden');
+  calc.classList.toggle('hidden');
+  btn.classList.toggle('active', isHidden);
+}
+
+function hideCalculator() {
+  document.getElementById('calculator').classList.add('hidden');
+  document.getElementById('calc-toggle-btn').classList.remove('active');
+}
+
+function calcUpdateDisplay() {
+  let display = calcValue;
+  if (calcOperand !== null && calcOperator && !calcJustEvaled) {
+    display = String(calcOperand) + ' ' + calcOperator + ' ' + calcValue;
+  }
+  const el = document.getElementById('calc-display');
+  el.textContent = display;
+}
+
+function calcDigit(d) {
+  if (calcJustEvaled) { calcValue = d; calcJustEvaled = false; }
+  else if (calcValue === '0') calcValue = d;
+  else if (calcValue.length < 12) calcValue += d;
+  calcUpdateDisplay();
+}
+
+function calcDot() {
+  if (calcJustEvaled) { calcValue = '0.'; calcJustEvaled = false; }
+  else if (!calcValue.includes('.')) calcValue += '.';
+  calcUpdateDisplay();
+}
+
+function calcOp(op) {
+  // Normalise to the symbols used in calcEquals (−, ×, ÷, +)
+  const sym = op === '-' ? '−' : op;
+  if (calcOperand !== null && !calcJustEvaled) {
+    calcEquals(true);
+  }
+  calcOperand = parseFloat(calcValue);
+  calcOperator = sym;
+  calcJustEvaled = false;
+  calcUpdateDisplay();
+}
+
+function calcEquals(internal = false) {
+  if (calcOperand === null || calcOperator === null) return;
+  const a = calcOperand;
+  const b = parseFloat(calcValue);
+  let result;
+  switch (calcOperator) {
+    case '+': result = a + b; break;
+    case '−': result = a - b; break;
+    case '×': result = a * b; break;
+    case '÷': result = b !== 0 ? a / b : 'Error'; break;
+    default: result = b;
+  }
+  if (typeof result === 'number') {
+    // Trim floating point noise
+    result = parseFloat(result.toPrecision(10));
+    calcValue = String(result);
+  } else {
+    calcValue = result;
+  }
+  if (!internal) {
+    calcOperand = null;
+    calcOperator = null;
+    calcJustEvaled = true;
+  }
+  calcUpdateDisplay();
+}
+
+function calcClear() {
+  calcValue = '0';
+  calcOperand = null;
+  calcOperator = null;
+  calcJustEvaled = false;
+  calcUpdateDisplay();
+}
+
+function calcDel() {
+  if (calcJustEvaled || calcValue === '0' || calcValue === 'Error') {
+    calcValue = '0'; calcJustEvaled = false;
+  } else {
+    calcValue = calcValue.length > 1 ? calcValue.slice(0, -1) : '0';
+  }
+  calcUpdateDisplay();
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const inQuiz = document.getElementById('screen-quiz').classList.contains('active');
   if (!inQuiz) return;

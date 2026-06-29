@@ -1,28 +1,74 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
   <defs>
-    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a5c2a;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0d3d1a;stop-opacity:1" />
+    <linearGradient id="shieldG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d6b34"/>
+      <stop offset="100%" style="stop-color:#0d3d1a"/>
     </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f5c842;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#c8960a;stop-opacity:1" />
+    <linearGradient id="goldG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f9d94e"/>
+      <stop offset="100%" style="stop-color:#c8960a"/>
     </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <path d="M100 8 L180 35 L180 130 Q180 200 100 232 Q20 200 20 130 L20 35 Z" fill="url(#shieldGrad)" stroke="#c8960a" stroke-width="4"/>
-  <path d="M100 18 L170 42 L170 128 Q170 192 100 220 Q30 192 30 128 L30 42 Z" fill="none" stroke="#f5c842" stroke-width="1.5" opacity="0.6"/>
-  <rect x="68" y="58" width="64" height="80" rx="4" fill="#f5c842" opacity="0.9"/>
-  <rect x="72" y="62" width="56" height="72" rx="2" fill="#1a5c2a"/>
-  <line x1="78" y1="76" x2="122" y2="76" stroke="#f5c842" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="78" y1="86" x2="122" y2="86" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
-  <line x1="78" y1="95" x2="114" y2="95" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
-  <line x1="78" y1="104" x2="118" y2="104" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
-  <line x1="78" y1="113" x2="110" y2="113" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
-  <line x1="78" y1="122" x2="116" y2="122" stroke="#f5c842" stroke-width="2" stroke-linecap="round"/>
-  <ellipse cx="100" cy="50" rx="6" ry="10" fill="#f5c842"/>
-  <polygon points="100,32 104,44 100,42 96,44" fill="#f5c842"/>
-  <ellipse cx="100" cy="47" rx="3" ry="4" fill="#ff8c00" opacity="0.9"/>
-  <text x="100" y="186" text-anchor="middle" font-family="Georgia, serif" font-size="8" fill="#f5c842" font-weight="bold" letter-spacing="1">UNIVERSITY OF IBADAN</text>
-  <path d="M52 178 Q100 190 148 178" stroke="#f5c842" stroke-width="1" fill="none" opacity="0.6"/>
-  <text x="100" y="200" text-anchor="middle" font-family="Georgia, serif" font-size="7" fill="#f5c842" letter-spacing="0.5">OMOLUABI</text>
+
+  <!-- Outer shield border -->
+  <path d="M100 6 L188 34 L188 128 Q188 206 100 236 Q12 206 12 128 L12 34 Z"
+        fill="url(#shieldG)" stroke="#c8960a" stroke-width="3.5"/>
+  <!-- Inner shield trim -->
+  <path d="M100 14 L179 40 L179 128 Q179 198 100 226 Q21 198 21 128 L21 40 Z"
+        fill="none" stroke="#f9d94e" stroke-width="1.2" opacity="0.55"/>
+
+  <!-- Open book base -->
+  <rect x="62" y="100" width="76" height="54" rx="3" fill="url(#goldG)" opacity="0.92"/>
+  <rect x="66" y="104" width="68" height="46" rx="2" fill="#0d3d1a"/>
+  <!-- Book spine line -->
+  <line x1="100" y1="104" x2="100" y2="150" stroke="#f9d94e" stroke-width="1.5"/>
+  <!-- Left page lines -->
+  <line x1="72" y1="114" x2="96" y2="114" stroke="#f9d94e" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="72" y1="122" x2="96" y2="122" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="72" y1="130" x2="96" y2="130" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="72" y1="138" x2="90" y2="138" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Right page lines -->
+  <line x1="104" y1="114" x2="128" y2="114" stroke="#f9d94e" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="104" y1="122" x2="128" y2="122" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="104" y1="130" x2="128" y2="130" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="104" y1="138" x2="122" y2="138" stroke="#f9d94e" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Torch handle -->
+  <rect x="96" y="70" width="8" height="36" rx="3" fill="url(#goldG)"/>
+  <!-- Torch cup -->
+  <path d="M88 72 Q100 68 112 72 L108 82 Q100 80 92 82 Z" fill="url(#goldG)"/>
+  <!-- Flame outer -->
+  <ellipse cx="100" cy="56" rx="11" ry="18" fill="#f97316" opacity="0.9" filter="url(#glow)"/>
+  <!-- Flame middle -->
+  <ellipse cx="100" cy="58" rx="7" ry="13" fill="#fbbf24"/>
+  <!-- Flame inner -->
+  <ellipse cx="100" cy="61" rx="4" ry="8" fill="#fef08a"/>
+  <!-- Flame tip glow -->
+  <ellipse cx="100" cy="42" rx="3" ry="5" fill="#fff" opacity="0.75"/>
+
+  <!-- Laurel left -->
+  <path d="M44 148 Q38 140 42 132 Q50 136 48 145 Z" fill="#4ade80" opacity="0.8"/>
+  <path d="M40 162 Q32 156 34 146 Q43 149 43 158 Z" fill="#4ade80" opacity="0.75"/>
+  <path d="M40 176 Q33 168 36 158 Q45 162 44 171 Z" fill="#4ade80" opacity="0.7"/>
+  <path d="M45 188 Q38 181 42 172 Q51 175 49 184 Z" fill="#4ade80" opacity="0.65"/>
+  <!-- Laurel right -->
+  <path d="M156 148 Q162 140 158 132 Q150 136 152 145 Z" fill="#4ade80" opacity="0.8"/>
+  <path d="M160 162 Q168 156 166 146 Q157 149 157 158 Z" fill="#4ade80" opacity="0.75"/>
+  <path d="M160 176 Q167 168 164 158 Q155 162 156 171 Z" fill="#4ade80" opacity="0.7"/>
+  <path d="M155 188 Q162 181 158 172 Q149 175 151 184 Z" fill="#4ade80" opacity="0.65"/>
+  <!-- Laurel stems -->
+  <path d="M48 190 Q68 196 100 198 Q132 196 152 190" stroke="#4ade80" stroke-width="1.5" fill="none" opacity="0.7"/>
+
+  <!-- University name arc -->
+  <path id="topArc" d="M38 212 Q100 202 162 212" fill="none"/>
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="8.5" font-weight="bold" fill="#f9d94e" letter-spacing="1.2">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">UNIVERSITY OF IBADAN</textPath>
+  </text>
+  <!-- Motto -->
+  <text x="100" y="228" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="7.5" fill="#f9d94e" letter-spacing="2" opacity="0.9">OMOLUABI</text>
 </svg>

@@ -20,9 +20,10 @@ def get_questions(subject: str = None, year: str = None, count: int = 25):
         if subj not in QUESTIONS:
             continue
         pool = []
-        if year and year != "random" and year in QUESTIONS[subj]:
-            for q in QUESTIONS[subj][year]:
-                pool.append({**q, "subject": subj, "year": year})
+        if year and year != "random":
+            if year in QUESTIONS[subj]:
+                for q in QUESTIONS[subj][year]:
+                    pool.append({**q, "subject": subj, "year": year})
         else:
             for yr, qs in QUESTIONS[subj].items():
                 for q in qs:

@@ -10,15 +10,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="icon" type="image/svg+xml" href="assets/ui_logo.svg">
+<link rel="icon" href="assets/ui_crest.jpg" type="image/jpeg">
 </head>
 <body>
 
 <div id="screen-home" class="screen active">
-  <div class="home-bg"></div>
+  <div class="home-bg">
+    <img src="assets/ui_gate.jpg" alt="" class="home-bg-img" aria-hidden="true" onerror="this.style.display='none'">
+    <div class="home-bg-overlay"></div>
+  </div>
   <div class="home-content">
     <div class="home-header">
-      <img src="assets/ui_logo.svg" alt="UI Crest" class="home-logo">
+      <img src="assets/ui_crest.jpg" alt="UI Crest" class="home-logo">
       <h1 class="home-title">UIPrep</h1>
       <p class="home-subtitle">University of Ibadan · Post UTME</p>
     </div>
@@ -66,7 +69,9 @@
     </div>
 
     <button class="history-btn" onclick="showScreen('history')">
-      <span>📊</span> Session History
+      <span>📊</span>
+      <span>Session History</span>
+      <span class="history-btn-arrow">›</span>
     </button>
 
     <footer class="home-footer">
@@ -147,7 +152,12 @@
         <span id="quiz-progress-text" class="quiz-progress-text">Q 1 / 25</span>
       </div>
     </div>
-    <div id="quiz-timer" class="quiz-timer hidden">⏱ <span id="timer-display">90:00</span></div>
+    <div class="quiz-header-right">
+      <button id="calc-toggle-btn" class="calc-toggle-btn hidden" onclick="toggleCalculator()" title="Calculator">
+        <span class="calc-btn-icon">🧮</span>
+      </button>
+      <div id="quiz-timer" class="quiz-timer hidden">⏱ <span id="timer-display">90:00</span></div>
+    </div>
   </div>
 
   <div class="subject-tabs-wrap">
@@ -192,46 +202,8 @@
   <div class="submit-bar hidden" id="submit-bar">
     <button class="btn-submit-exam" onclick="submitExam()">Submit Exam</button>
   </div>
-</div>
-
-<div id="screen-results" class="screen">
-  <div class="top-bar">
-    <button class="back-btn" onclick="showScreen('home')">✕ Close</button>
-    <h2>Results</h2>
-    <div></div>
-  </div>
-  <div class="screen-body results-body">
-    <div class="score-circle-wrap">
-      <svg class="score-ring" viewBox="0 0 120 120" width="160" height="160">
-        <circle cx="60" cy="60" r="52" fill="none" stroke="#1e3a26" stroke-width="10"/>
-        <circle id="score-ring-fill" cx="60" cy="60" r="52" fill="none" stroke="#4ade80" stroke-width="10"
-          stroke-dasharray="326.7" stroke-dashoffset="326.7" stroke-linecap="round"
-          transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease"/>
-      </svg>
-      <div class="score-inner">
-        <div id="result-pct" class="result-pct">0%</div>
-        <div id="result-fraction" class="result-fraction">0/0</div>
-      </div>
-    </div>
-
-    <div id="result-grade" class="result-grade"></div>
-
-    <div class="subject-breakdown" id="subject-breakdown"></div>
-
-    <div id="post-exam-ai-banner" class="post-exam-ai-banner hidden">
-      <span>✨</span>
-      <p>AI explanations are now unlocked. Review below to learn from mistakes.</p>
-    </div>
-
-    <div class="review-section">
-      <div class="review-tabs">
-        <button class="rtab active" onclick="setReviewTab('wrong', this)">Wrong</button>
-        <button class="rtab" onclick="setReviewTab('correct', this)">Correct</button>
-        <button class="rtab" onclick="setReviewTab('unanswered', this)">Skipped</button>
-        <button class="rtab" onclick="setReviewTab('all', this)">All</button>
-      </div>
-      <div id="review-list" class="review-list"></div>
-    </div>
+  <div class="submit-bar hidden" id="practice-finish-bar">
+    <button class="btn-submit-exam" onclick="finishPractice()">Finish &amp; See Results</button>
   </div>
 </div>
 
@@ -239,13 +211,115 @@
   <div class="top-bar">
     <button class="back-btn" onclick="showScreen('home')">‹ Back</button>
     <h2>Session History</h2>
-    <div></div>
+    <button class="hist-clear-btn" onclick="clearHistory()">Clear</button>
   </div>
   <div class="screen-body">
     <div id="history-list" class="history-list"></div>
   </div>
 </div>
 
+<!-- ── RESULTS MODAL (full-screen overlay, appears over quiz) ── -->
+<div id="results-modal" class="results-modal hidden">
+  <div class="results-modal-inner">
+
+    <!-- Header -->
+    <div class="results-modal-header">
+      <button class="results-close-btn" onclick="closeResults()">✕ Close</button>
+      <h2 class="results-modal-title">Your Results</h2>
+      <div style="width:70px"></div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="results-modal-body" id="results-modal-body">
+
+      <!-- Score ring + grade -->
+      <div class="score-hero">
+        <div class="score-circle-wrap">
+          <svg class="score-ring" viewBox="0 0 140 140" width="190" height="190">
+            <circle cx="70" cy="70" r="62" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+            <circle id="score-ring-track" cx="70" cy="70" r="62" fill="none" stroke="#1e3a26" stroke-width="12"/>
+            <circle id="score-ring-fill" cx="70" cy="70" r="62" fill="none" stroke="#4ade80" stroke-width="12"
+              stroke-dasharray="389.6" stroke-dashoffset="389.6" stroke-linecap="round"
+              transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 1.3s cubic-bezier(0.25,1,0.5,1)"/>
+          </svg>
+          <div class="score-inner">
+            <div id="result-pct" class="result-pct">0%</div>
+            <div id="result-fraction" class="result-fraction">0/0</div>
+          </div>
+          <div class="score-ring-glow" id="score-ring-glow"></div>
+        </div>
+        <div id="result-grade" class="result-grade"></div>
+        <div id="result-message" class="result-message"></div>
+      </div>
+
+      <!-- Subject breakdown -->
+      <div class="subject-breakdown" id="subject-breakdown"></div>
+
+      <!-- AI banner (exam mode) -->
+      <div id="post-exam-ai-banner" class="post-exam-ai-banner hidden">
+        <span>✨</span>
+        <p>AI explanations are now unlocked in the review below.</p>
+      </div>
+
+      <!-- Review toggle button -->
+      <button class="btn-review-toggle" id="btn-review-toggle" onclick="toggleReviewSection()">
+        <span class="review-toggle-icon">📝</span>
+        <span class="review-toggle-text">Review My Answers &amp; Corrections</span>
+        <span class="review-toggle-arrow" id="review-toggle-arrow">›</span>
+      </button>
+
+      <!-- Review section (hidden until button tapped) -->
+      <div class="review-section hidden" id="review-section">
+        <div class="review-tabs">
+          <button class="rtab active" onclick="setReviewTab('wrong', this)">✗ Wrong</button>
+          <button class="rtab" onclick="setReviewTab('correct', this)">✓ Correct</button>
+          <button class="rtab" onclick="setReviewTab('unanswered', this)">— Skipped</button>
+          <button class="rtab" onclick="setReviewTab('all', this)">All</button>
+        </div>
+        <div id="review-list" class="review-list"></div>
+      </div>
+
+      <button class="results-home-btn" onclick="closeResults()">
+        🏠 Back to Home
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CALCULATOR OVERLAY ── -->
+<div id="calculator" class="calculator hidden">
+  <div class="calc-header">
+    <span class="calc-title">Calculator</span>
+    <button class="calc-close" onclick="toggleCalculator()">✕</button>
+  </div>
+  <div class="calc-display" id="calc-display">0</div>
+  <div class="calc-keypad">
+    <button class="calc-btn calc-clear" onclick="calcClear()">C</button>
+    <button class="calc-btn calc-del"   onclick="calcDel()">⌫</button>
+    <button class="calc-btn calc-op"    onclick="calcOp('÷')">÷</button>
+    <button class="calc-btn calc-op"    onclick="calcOp('×')">×</button>
+
+    <button class="calc-btn" onclick="calcDigit('7')">7</button>
+    <button class="calc-btn" onclick="calcDigit('8')">8</button>
+    <button class="calc-btn" onclick="calcDigit('9')">9</button>
+    <button class="calc-btn calc-op"    onclick="calcOp('-')">−</button>
+
+    <button class="calc-btn" onclick="calcDigit('4')">4</button>
+    <button class="calc-btn" onclick="calcDigit('5')">5</button>
+    <button class="calc-btn" onclick="calcDigit('6')">6</button>
+    <button class="calc-btn calc-op"    onclick="calcOp('+')">+</button>
+
+    <button class="calc-btn" onclick="calcDigit('1')">1</button>
+    <button class="calc-btn" onclick="calcDigit('2')">2</button>
+    <button class="calc-btn" onclick="calcDigit('3')">3</button>
+    <button class="calc-btn calc-equals" onclick="calcEquals()" style="grid-row:span 2">=</button>
+
+    <button class="calc-btn calc-zero"  onclick="calcDigit('0')">0</button>
+    <button class="calc-btn"            onclick="calcDot()">.</button>
+  </div>
+</div>
+
+<!-- ── QUESTION GRID SHEET ── -->
 <div id="question-grid-sheet" class="bottom-sheet hidden">
   <div class="sheet-overlay" onclick="closeQuestionGrid()"></div>
   <div class="sheet-panel">
