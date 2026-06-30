@@ -341,7 +341,7 @@ select option{background:var(--surface2)}
 .hist-bar-row{display:flex;align-items:center;gap:8px}
 .hist-bar-label{font-size:0.73rem;color:var(--text3);width:62px;flex-shrink:0}
 .hist-bar-track{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
-.hist-bar-fill{height:100%;border-radius:3px;transition:width 0.9s ease}
+.hist-bar-fill{height:100%;border-radius:3px}
 .hist-bar-pct{font-size:0.72rem;font-weight:700;width:32px;text-align:right;flex-shrink:0}
 
 .hist-view-btn{
