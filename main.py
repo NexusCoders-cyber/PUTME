@@ -45,21 +45,26 @@ async def ai_explain(req: AIRequest):
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if api_key:
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            prompt = f"""You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).
-
-Question: {req.question}
-Correct Answer: {req.answer}
-
-Provide a clear, concise explanation (3-4 sentences) of why this is the correct answer.
-Include the key concept being tested. Make it easy to remember for exam purposes."""
-            response = model.generate_content(prompt)
+            from google import genai
+            client = genai.Client(api_key=api_key)
+            prompt = (
+                "You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).\n\n"
+                f"Question: {req.question}\n"
+                f"Correct Answer: {req.answer}\n\n"
+                "Give a clear, concise explanation (3-4 sentences) of why this is the correct answer. "
+                "Include the key concept being tested. Make it easy to remember for exam purposes."
+            )
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt
+            )
             return JSONResponse(content={"explanation": response.text, "source": "gemini"})
-        except Exception:
+        except Exception as e:
             pass
-    return JSONResponse(content={"explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.", "source": "fallback"})
+    return JSONResponse(content={
+        "explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.",
+        "source": "fallback"
+    })
 
 @app.get("/api/ai/status")
 def ai_status():
