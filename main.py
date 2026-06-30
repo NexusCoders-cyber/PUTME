@@ -15,21 +15,31 @@ class AIRequest(BaseModel):
 @app.get("/api/questions")
 def get_questions(subject: str = None, year: str = None, count: int = 25):
     result = {}
-    subjects = [subject] if subject else list(QUESTIONS.keys())
-    for subj in subjects:
+    subj_list = [subject] if subject else list(QUESTIONS.keys())
+
+    for subj in subj_list:
         if subj not in QUESTIONS:
             continue
+
         pool = []
+
         if year and year != "random":
             if year in QUESTIONS[subj]:
                 for q in QUESTIONS[subj][year]:
                     pool.append({**q, "subject": subj, "year": year})
+
+            if not pool:
+                for yr, qs in QUESTIONS[subj].items():
+                    for q in qs:
+                        pool.append({**q, "subject": subj, "year": yr})
         else:
             for yr, qs in QUESTIONS[subj].items():
                 for q in qs:
                     pool.append({**q, "subject": subj, "year": yr})
+
         random.shuffle(pool)
         result[subj] = pool[:count]
+
     return JSONResponse(content=result)
 
 @app.get("/api/subjects")
@@ -59,10 +69,11 @@ async def ai_explain(req: AIRequest):
                 contents=prompt
             )
             return JSONResponse(content={"explanation": response.text, "source": "gemini"})
-        except Exception as e:
+        except Exception:
             pass
+
     return JSONResponse(content={
-        "explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.",
+        "explanation": f"Correct answer: {req.answer}. Review this concept in your textbook.",
         "source": "fallback"
     })
 
