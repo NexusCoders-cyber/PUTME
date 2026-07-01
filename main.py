@@ -15,7 +15,15 @@ class AIRequest(BaseModel):
 @app.get("/api/questions")
 def get_questions(subject: str = None, year: str = None, count: int = 25):
     result = {}
-    subj_list = [subject] if subject else list(QUESTIONS.keys())
+    subject_lookup = {s.lower(): s for s in QUESTIONS}
+
+    if subject:
+        match = subject_lookup.get(subject.strip().lower())
+        subj_list = [match] if match else []
+    else:
+        subj_list = list(QUESTIONS.keys())
+
+    count = max(1, min(count, 9999))
 
     for subj in subj_list:
         if subj not in QUESTIONS:
@@ -69,11 +77,16 @@ async def ai_explain(req: AIRequest):
                 contents=prompt
             )
             return JSONResponse(content={"explanation": response.text, "source": "gemini"})
-        except Exception:
-            pass
+        except Exception as e:
+            err = str(e)
+            if "429" in err or "RESOURCE_EXHAUSTED" in err:
+                return JSONResponse(content={
+                    "explanation": "AI quota limit reached. Try again in a moment, or review the built-in explanation below.",
+                    "source": "quota_error"
+                })
 
     return JSONResponse(content={
-        "explanation": f"Correct answer: {req.answer}. Review this concept in your textbook.",
+        "explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.",
         "source": "fallback"
     })
 
