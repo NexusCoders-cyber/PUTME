@@ -1,4 +1,5 @@
 import os
+import time
 import random
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +8,8 @@ from pydantic import BaseModel
 from questions_data import QUESTIONS
 
 app = FastAPI()
+
+MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash-8b"]
 
 class AIRequest(BaseModel):
     question: str
@@ -61,38 +64,57 @@ def get_subjects():
 @app.post("/api/ai/explain")
 async def ai_explain(req: AIRequest):
     api_key = os.environ.get("GEMINI_API_KEY", "")
-    if api_key:
-        try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
-            prompt = (
-                "You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).\n\n"
-                f"Question: {req.question}\n"
-                f"Correct Answer: {req.answer}\n\n"
-                "Give a clear, concise explanation (3-4 sentences) of why this is the correct answer. "
-                "Include the key concept being tested. Make it easy to remember for exam purposes."
-            )
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
-            )
-            return JSONResponse(content={"explanation": response.text, "source": "gemini"})
-        except Exception as e:
-            err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
-                return JSONResponse(content={
-                    "explanation": "AI quota limit reached. Try again in a moment, or review the built-in explanation below.",
-                    "source": "quota_error"
-                })
+    if not api_key:
+        return JSONResponse(content={
+            "explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.",
+            "source": "fallback"
+        })
 
-    return JSONResponse(content={
-        "explanation": f"Correct answer: {req.answer}. Review this concept carefully in your notes.",
-        "source": "fallback"
-    })
+    try:
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        prompt = (
+            "You are a helpful exam tutor for Nigerian university entrance exams (UI Post UTME).\n\n"
+            f"Question: {req.question}\n"
+            f"Correct Answer: {req.answer}\n\n"
+            "Give a clear, concise explanation (3-4 sentences) of why this is the correct answer. "
+            "Include the key concept being tested. Make it easy to remember for exam purposes."
+        )
+
+        last_err = None
+        for model in MODELS:
+            for attempt in range(3):
+                try:
+                    response = client.models.generate_content(
+                        model=model,
+                        contents=prompt
+                    )
+                    return JSONResponse(content={"explanation": response.text, "source": "gemini"})
+                except Exception as e:
+                    last_err = str(e)
+                    if "429" in last_err or "RESOURCE_EXHAUSTED" in last_err:
+                        if attempt < 2:
+                            time.sleep(2 ** attempt)
+                        continue
+                    break
+
+        if "429" in str(last_err) or "RESOURCE_EXHAUSTED" in str(last_err):
+            return JSONResponse(content={
+                "explanation": "Gemini AI is temporarily rate-limited (free tier). Wait a moment and try again.",
+                "source": "quota_error"
+            })
+        raise Exception(last_err)
+
+    except Exception as e:
+        return JSONResponse(content={
+            "explanation": f"AI unavailable: {str(e)[:120]}. Review the built-in explanation below.",
+            "source": "error"
+        })
 
 @app.get("/api/ai/status")
 def ai_status():
     has_key = bool(os.environ.get("GEMINI_API_KEY", ""))
     return JSONResponse(content={"enabled": has_key})
 
-app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+if not os.environ.get("VERCEL"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
